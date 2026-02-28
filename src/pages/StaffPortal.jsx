@@ -53,6 +53,8 @@ const StaffPortal = () => {
   }
 
   useEffect(() => {
+    document.body.classList.add('system-cursor')
+
     const isAuthenticated = localStorage.getItem('staffAuthenticated')
     if (isAuthenticated !== 'true') {
       navigate('/login/staff')
@@ -65,6 +67,10 @@ const StaffPortal = () => {
     }
 
     loadData()
+
+    return () => {
+      document.body.classList.remove('system-cursor')
+    }
   }, [navigate])
 
   const paidTransactions = useMemo(
@@ -150,7 +156,8 @@ const StaffPortal = () => {
                   <tr>
                     <th>Student Code</th>
                     <th>Name</th>
-                    <th>Amount</th>
+                    <th>Mobile</th>
+                    {!isCr ? <th>Amount</th> : null}
                     <th>Status</th>
                     <th>UTR</th>
                   </tr>
@@ -160,7 +167,8 @@ const StaffPortal = () => {
                     <tr key={row.payment_id || `${row.student_code}-${row.utr_no}`}>
                       <td>{row.student_code}</td>
                       <td>{row.student_name}</td>
-                      <td>₹{row.amount}</td>
+                      <td>{row.phone || '-'}</td>
+                      {!isCr ? <td>₹{row.amount}</td> : null}
                       <td>{row.payment_approved || row.status}</td>
                       <td>{row.utr_no}</td>
                     </tr>
@@ -178,6 +186,7 @@ const StaffPortal = () => {
                   <tr>
                     <th>Student Code</th>
                     <th>Name</th>
+                    <th>Mobile</th>
                     <th>Department</th>
                     <th>Year</th>
                   </tr>
@@ -187,6 +196,7 @@ const StaffPortal = () => {
                     <tr key={`${row.student_code}-${row.name}`}>
                       <td>{row.student_code}</td>
                       <td>{row.name}</td>
+                      <td>{row.phone || '-'}</td>
                       <td>{row.department}</td>
                       <td>{row.year}</td>
                     </tr>
@@ -215,7 +225,7 @@ const StaffPortal = () => {
                   <input
                     value={studentCode}
                     onChange={(e) => setStudentCode(e.target.value)}
-                    placeholder="BTECH\2022\CSE\0001"
+                    placeholder="SKFGI\\2024\\BCA\\0032"
                   />
                 </label>
 
