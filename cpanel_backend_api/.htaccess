@@ -1,7 +1,34 @@
 Options -Indexes
 
+# ---------------------------------------------------------------------------
+# CORS — Apache-level preflight handler
+# This fires BEFORE PHP so OPTIONS requests are never blocked by mod_rewrite
+# or by PHP parse errors. The dynamic origin echo is handled by PHP for
+# real requests; here we just guarantee the preflight always succeeds for
+# trusted domains.
+# ---------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Always set Vary so caches respect the Origin header
+    Header always set Vary "Origin"
+
+    # For preflight (OPTIONS), echo the requesting origin back unconditionally
+    # so the browser never sees a missing Access-Control-Allow-Origin.
+    # PHP will overwrite these on actual GET/POST requests with the correct
+    # narrowed value; this is only reached when PHP hasn't run yet.
+    SetEnvIf Origin "^(https?://(.*\.)?skf\.edu\.in|https://refresko-final\.vercel\.app|http://localhost(:[0-9]+)?)$" CORS_ORIGIN=$0
+    Header always set Access-Control-Allow-Origin "%{CORS_ORIGIN}e" env=CORS_ORIGIN
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-SUPERADMIN-TOKEN"
+    Header always set Access-Control-Max-Age "86400"
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Short-circuit OPTIONS preflight — return 204 immediately without hitting PHP
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule .* - [R=204,L]
 
     # Allow direct access to uploads directory
     RewriteCond %{REQUEST_URI} ^/uploads/

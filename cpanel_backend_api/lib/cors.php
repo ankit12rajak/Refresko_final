@@ -13,8 +13,8 @@ function normalize_origin(string $origin): string
     }
 
     $scheme = strtolower((string)($parts['scheme'] ?? ''));
-    $host = strtolower((string)($parts['host'] ?? ''));
-    $port = isset($parts['port']) ? (int)$parts['port'] : null;
+    $host   = strtolower((string)($parts['host']   ?? ''));
+    $port   = isset($parts['port']) ? (int)$parts['port'] : null;
 
     if ($scheme === '' || $host === '') {
         return rtrim($origin, '/');
@@ -28,18 +28,57 @@ function normalize_origin(string $origin): string
     return $normalized;
 }
 
+/**
+ * Returns true when the incoming origin should be allowed.
+ *
+ * Rules (checked in order):
+ *  1. Exact match against the configured allow-list (after normalisation).
+ *  2. Any *.skf.edu.in subdomain is always trusted (covers both refresko.skf.edu.in
+ *     and api-refresko.skf.edu.in without requiring a config change for new sub-domains).
+ *  3. localhost on any port is trusted (dev convenience).
+ */
+function is_origin_allowed(string $normalizedOrigin, array $normalizedAllowed): bool
+{
+    if ($normalizedOrigin === '') {
+        return false;
+    }
+
+    // 1. Exact allowlist match
+    if (in_array($normalizedOrigin, $normalizedAllowed, true)) {
+        return true;
+    }
+
+    // 2. *.skf.edu.in (https or http)
+    $parts = parse_url($normalizedOrigin);
+    $host  = strtolower((string)($parts['host'] ?? ''));
+    if (
+        $host !== '' &&
+        (substr($host, -strlen('.skf.edu.in')) === '.skf.edu.in' || $host === 'skf.edu.in')
+    ) {
+        return true;
+    }
+
+    // 3. localhost (any port) for local development
+    if ($host === 'localhost' || $host === '127.0.0.1') {
+        return true;
+    }
+
+    return false;
+}
+
 function apply_cors(): void
 {
-    $config = require __DIR__ . '/../config/env.php';
+    $config  = require __DIR__ . '/../config/env.php';
     $allowed = $config['cors_allowed_origins'] ?? [];
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    $origin  = isset($_SERVER['HTTP_ORIGIN']) ? trim((string)$_SERVER['HTTP_ORIGIN']) : '';
 
-    $normalizedOrigin = normalize_origin($origin);
-    $normalizedAllowed = array_values(array_unique(array_filter(array_map(static function ($item) {
-        return normalize_origin((string)$item);
-    }, is_array($allowed) ? $allowed : []))));
+    $normalizedOrigin  = normalize_origin($origin);
+    $normalizedAllowed = array_values(array_unique(array_filter(
+        array_map(static fn($item) => normalize_origin((string)$item),
+            is_array($allowed) ? $allowed : [])
+    )));
 
-    if ($normalizedOrigin !== '' && in_array($normalizedOrigin, $normalizedAllowed, true)) {
+    if (is_origin_allowed($normalizedOrigin, $normalizedAllowed)) {
         header("Access-Control-Allow-Origin: {$normalizedOrigin}");
     }
 
@@ -48,7 +87,7 @@ function apply_cors(): void
     header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-SUPERADMIN-TOKEN');
     header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 
-    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+    if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? '')) === 'OPTIONS') {
         http_response_code(204);
         exit;
     }
