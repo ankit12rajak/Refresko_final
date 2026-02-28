@@ -536,37 +536,19 @@ function staff_transactions(): void
     $departmentScope = trim((string)($staff['department_scope'] ?? ''));
     $yearScope = trim((string)($staff['year_scope'] ?? ''));
 
-    $paymentsSql = 'SELECT p.payment_id,
-                           p.transaction_id,
-                           p.utr_no,
-                           p.student_code,
-                           p.student_name,
-                           p.department,
-                           p.year,
-                           p.amount,
-                           p.status,
-                           p.payment_approved,
-                           p.created_at,
-                           COALESCE(sd.phone, "") AS phone
-                    FROM payments p
-                    LEFT JOIN student_details sd ON UPPER(TRIM(sd.student_code)) = UPPER(TRIM(p.student_code))';
+    $paymentsSql = 'SELECT payment_id, transaction_id, utr_no, student_code, student_name, department, year, amount, status, payment_approved, created_at
+                    FROM payments';
     $paymentsParams = [];
 
-        $pendingSql = "SELECT student_code,
-                     name,
-                     phone,
-                     department,
-                     year,
-                     payment_completion,
-                     payment_approved
-                 FROM student_details
-                 WHERE profile_completed = 1
-                AND (
-                   payment_completion = 0
-                   OR payment_approved IS NULL
-                   OR TRIM(payment_approved) = ''
-                   OR LOWER(TRIM(payment_approved)) IN ('pending', 'declined')
-                )";
+        $pendingSql = "SELECT student_code, name, department, year, payment_completion, payment_approved
+                                     FROM student_details
+                                     WHERE profile_completed = 0
+                                         AND (
+                                                payment_completion = 0
+                                                OR payment_approved IS NULL
+                                                OR TRIM(payment_approved) = ''
+                                                OR LOWER(TRIM(payment_approved)) <> 'approved'
+                                         )";
     $pendingParams = [];
 
     if ($staffRole === 'cr') {
@@ -575,14 +557,14 @@ function staff_transactions(): void
         }
 
         $scopeDepartmentUpper = normalize_scope_text($departmentScope);
-        $paymentsSql .= ' WHERE (UPPER(TRIM(p.department)) = :department_scope OR p.department IS NULL OR TRIM(p.department) = "")';
+        $paymentsSql .= ' WHERE (UPPER(TRIM(department)) = :department_scope OR department IS NULL OR TRIM(department) = "")';
         $paymentsParams[':department_scope'] = $scopeDepartmentUpper;
 
         $pendingSql .= ' AND (UPPER(TRIM(department)) = :department_scope OR department IS NULL OR TRIM(department) = "")';
         $pendingParams[':department_scope'] = $scopeDepartmentUpper;
     }
 
-    $paymentsSql .= ' ORDER BY p.created_at DESC, p.id DESC LIMIT 1000';
+    $paymentsSql .= ' ORDER BY id DESC LIMIT 1000';
     $paymentsStmt = $pdo->prepare($paymentsSql);
     foreach ($paymentsParams as $key => $value) {
         $paymentsStmt->bindValue($key, $value, PDO::PARAM_STR);

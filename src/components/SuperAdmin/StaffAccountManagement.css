@@ -41,6 +41,11 @@
   transition: all 0.3s ease;
 }
 
+.staff-create-form .form-group select option {
+  color: var(--color-background);
+  background: var(--color-secondary);
+}
+
 .staff-create-form .form-group input:focus,
 .staff-create-form .form-group select:focus {
   outline: none;

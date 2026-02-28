@@ -42,33 +42,35 @@
 }
 
 .dashboard-page .back-home {
-  position: fixed;
-  top: 20px;
-  left: 20px;
+  position: relative;
+  top: auto;
+  right: auto;
+  left: auto;
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--color-text);
   text-decoration: none;
   transition: all 0.3s ease;
-  z-index: 1000;
-  padding: 10px 20px;
+  z-index: 2;
+  padding: 8px 14px;
   border: 1px solid rgba(255, 0, 51, 0.3);
   background: rgba(10, 10, 10, 0.95);
   backdrop-filter: blur(15px);
   border-radius: 6px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   font-weight: 500;
   letter-spacing: 0.02em;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  margin-bottom: 18px;
 }
 
 .dashboard-page .back-home:hover {
   color: var(--color-primary);
   border-color: var(--color-primary);
   background: rgba(10, 10, 10, 0.98);
-  transform: translateX(-4px);
+  transform: translateX(-2px);
   box-shadow: 0 6px 20px rgba(255, 0, 51, 0.2);
 }
 
@@ -166,6 +168,14 @@
 
 .nav-icon {
   font-size: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .nav-label {
@@ -290,6 +300,14 @@
   font-size: 1.8rem;
   min-width: 50px;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon svg {
+  width: 1.8rem;
+  height: 1.8rem;
 }
 
 .stat-content {
@@ -400,13 +418,21 @@
 
 .student-avatar {
   flex-shrink: 0;
+  width: 100px;
+  height: 100px;
 }
 
 .avatar-placeholder {
   width: 100px;
   height: 100px;
+  min-width: 100px;
+  min-height: 100px;
+  max-width: 100px;
+  max-height: 100px;
+  aspect-ratio: 1 / 1;
   background: linear-gradient(135deg, rgba(255, 0, 51, 0.3), rgba(255, 0, 51, 0.1));
   border: 2px solid var(--color-primary);
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -414,6 +440,16 @@
   font-size: 2rem;
   color: var(--color-primary);
   text-shadow: 0 0 10px rgba(255, 0, 51, 0.5);
+  overflow: hidden;
+}
+
+.avatar-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 9999px;
 }
 
 .student-details {
@@ -486,6 +522,14 @@
   font-size: 2.5rem;
   margin-bottom: 15px;
   filter: drop-shadow(0 0 10px rgba(255, 0, 51, 0.3));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon svg {
+  width: 2rem;
+  height: 2rem;
 }
 
 .action-card h3 {
@@ -1638,11 +1682,12 @@ body {
 
 @media (max-width: 480px) {
   .dashboard-page .back-home {
-    top: 12px;
-    left: 12px;
-    padding: 8px 14px;
+    top: auto;
+    right: auto;
+    padding: 7px 12px;
     font-size: 0.82rem;
     border-radius: 5px;
+    margin-bottom: 14px;
   }
   
   /* Convert sidebar to bottom nav on very small screens */
@@ -1723,7 +1768,16 @@ body {
   .avatar-placeholder {
     width: 70px;
     height: 70px;
+    min-width: 70px;
+    min-height: 70px;
+    max-width: 70px;
+    max-height: 70px;
     font-size: 1.3rem;
+  }
+
+  .student-avatar {
+    width: 70px;
+    height: 70px;
   }
   
   .detail-label {

@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import QRCode from 'qrcode'
+import md5 from 'blueimp-md5'
+import { House, Ticket, ReceiptText, LogOut, CreditCard, ShieldCheck } from 'lucide-react'
 import { cpanelApi } from '../lib/cpanelApi'
 import { getActivePaymentOption, loadPaymentConfig } from '../lib/paymentConfig'
 import { loadPaymentConfigWithApi } from '../lib/paymentConfigApi'
@@ -17,6 +19,16 @@ const normalizeApprovalState = (value) => {
   const normalized = String(value ?? '').trim().toLowerCase()
   if (['approved', 'declined', 'pending'].includes(normalized)) return normalized
   return 'pending'
+}
+
+const getGravatarUrl = (email, size = 200) => {
+  const normalizedEmail = String(email ?? '').trim().toLowerCase()
+  if (!normalizedEmail) {
+    return `https://www.gravatar.com/avatar/?s=${size}&d=mp&r=g`
+  }
+
+  const hash = md5(normalizedEmail)
+  return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=mp&r=g`
 }
 
 // Default data structure
@@ -41,6 +53,7 @@ const SKFDashboard = () => {
   const [foodPreference, setFoodPreference] = useState('')
   const [gatePassQrCodeUrl, setGatePassQrCodeUrl] = useState('')
   const [paymentConfig, setPaymentConfig] = useState(() => loadPaymentConfig())
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false)
 
   const activePaymentOption = useMemo(
     () => getActivePaymentOption(paymentConfig),
@@ -48,6 +61,17 @@ const SKFDashboard = () => {
   )
   const configuredPaymentAmount = Number(activePaymentOption?.amount) || 500
   const isFoodIncluded = Boolean(activePaymentOption?.includeFood)
+  const studentInitials = useMemo(
+    () => String(student.name || '')
+      .split(' ')
+      .filter(Boolean)
+      .map((namePart) => namePart[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'SK',
+    [student.name]
+  )
+  const studentGravatarUrl = useMemo(() => getGravatarUrl(student.email, 200), [student.email])
 
   // Fetch payment status from database (cross-device sync)
   const fetchPaymentStatusFromDatabase = async (studentCode) => {
@@ -335,6 +359,10 @@ const SKFDashboard = () => {
     }
   }, [gatePassPayload, isPaymentApproved, isGatePassCreated])
 
+  useEffect(() => {
+    setAvatarLoadFailed(false)
+  }, [studentGravatarUrl])
+
   const handleLogout = () => {
     // Clear authentication data
     localStorage.removeItem('isAuthenticated')
@@ -398,10 +426,6 @@ const SKFDashboard = () => {
   return (
     <div className="dashboard-page">
       <div className="hex-grid-overlay" />
-      
-      <Link to="/" className="back-home">
-        <span>← Back to Home</span>
-      </Link>
 
       <div className="dashboard-layout">
         {/* Sidebar Navigation */}
@@ -421,28 +445,28 @@ const SKFDashboard = () => {
               className={`nav-item ${activeSection === 'home' ? 'active' : ''}`}
               onClick={() => setActiveSection('home')}
             >
-              <span className="nav-icon">🏠</span>
+              <span className="nav-icon"><House size={18} strokeWidth={2} /></span>
               <span className="nav-label">Home</span>
             </button>
             <button 
               className={`nav-item ${activeSection === 'gatepass' ? 'active' : ''}`}
               onClick={() => setActiveSection('gatepass')}
             >
-              <span className="nav-icon">🎫</span>
+              <span className="nav-icon"><Ticket size={18} strokeWidth={2} /></span>
               <span className="nav-label">Gate Pass</span>
             </button>
             <button 
               className={`nav-item ${activeSection === 'receipt' ? 'active' : ''}`}
               onClick={() => setActiveSection('receipt')}
             >
-              <span className="nav-icon">🧾</span>
+              <span className="nav-icon"><ReceiptText size={18} strokeWidth={2} /></span>
               <span className="nav-label">Receipt</span>
             </button>
           </nav>
 
           <div className="sidebar-footer">
             <button className="logout-btn" onClick={handleLogout}>
-              <span className="nav-icon">🚪</span>
+              <span className="nav-icon"><LogOut size={18} strokeWidth={2} /></span>
               <span className="nav-label">Logout</span>
             </button>
           </div>
@@ -450,6 +474,10 @@ const SKFDashboard = () => {
 
         {/* Main Content Area */}
         <main className="dashboard-main">
+          <Link to="/" className="back-home">
+            <span>← Back to Home</span>
+          </Link>
+
           <AnimatePresence mode="wait">
             {/* HOME SECTION */}
             {activeSection === 'home' && (
@@ -474,7 +502,7 @@ const SKFDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <div className="stat-icon">💳</div>
+                    <div className="stat-icon"><CreditCard size={26} strokeWidth={2} /></div>
                     <div className="stat-content">
                       <span className="stat-label">Payment Status</span>
                       <span className={`stat-value ${isPaymentApproved ? 'approved' : isPaymentDeclined ? 'declined' : 'pending'}`}>
@@ -489,7 +517,7 @@ const SKFDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <div className="stat-icon">🎫</div>
+                    <div className="stat-icon"><Ticket size={26} strokeWidth={2} /></div>
                     <div className="stat-content">
                       <span className="stat-label">Gate Pass</span>
                       <span className={`stat-value ${isPaymentApproved ? 'ready' : 'unavailable'}`}>
@@ -504,7 +532,7 @@ const SKFDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
                   >
-                    <div className="stat-icon">🔐</div>
+                    <div className="stat-icon"><ShieldCheck size={26} strokeWidth={2} /></div>
                     <div className="stat-content">
                       <span className="stat-label">Session</span>
                       <span className="stat-value">Active & Secure</span>
@@ -521,7 +549,17 @@ const SKFDashboard = () => {
                   <div className="student-info">
                     <div className="student-avatar">
                       <div className="avatar-placeholder">
-                        {student.name.split(' ').map(n => n[0]).join('')}
+                        {!avatarLoadFailed ? (
+                          <img
+                            src={studentGravatarUrl}
+                            alt={`${student.name || 'Student'} profile`}
+                            className="avatar-image"
+                            referrerPolicy="no-referrer"
+                            onError={() => setAvatarLoadFailed(true)}
+                          />
+                        ) : (
+                          studentInitials
+                        )}
                       </div>
                     </div>
                     <div className="student-details">
@@ -561,7 +599,7 @@ const SKFDashboard = () => {
                     whileHover={{ scale: 1.02, y: -5 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="action-icon">💳</div>
+                    <div className="action-icon"><CreditCard size={24} strokeWidth={2} /></div>
                     <h3>Contribute to Fest</h3>
                     <p>
                       Complete your registration by making the fest payment.
