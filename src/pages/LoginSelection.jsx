@@ -86,6 +86,18 @@ const LoginSelection = () => {
           >
             <span>{isAdminLoginDisabled ? 'ADMIN LOGIN DISABLED' : 'ADMIN LOGIN'}</span>
           </Link>
+
+          <Link
+            to="/login/staff"
+            className="auth-btn"
+            style={{
+              display: 'block',
+              textDecoration: 'none',
+              marginTop: '16px'
+            }}
+          >
+            <span>CR / VOLUNTEER LOGIN</span>
+          </Link>
         </motion.div>
       </motion.div>
     </div>

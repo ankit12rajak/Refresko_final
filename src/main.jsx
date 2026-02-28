@@ -11,6 +11,8 @@ import SuperAdmin from './pages/SuperAdmin/SuperAdmin.jsx'
 import ProfileSetup from './pages/ProfileSetup.jsx'
 import SKFDashboard from './pages/SKFDashboard.jsx'
 import PaymentGateway from './pages/PaymentGateway.jsx'
+import StaffLogin from './pages/StaffLogin.jsx'
+import StaffPortal from './pages/StaffPortal.jsx'
 
 const APP_BUILD_ID = typeof __APP_BUILD_ID__ !== 'undefined' ? String(__APP_BUILD_ID__) : 'dev'
 const BUILD_STORAGE_KEY = 'refresko_app_build_id'
@@ -78,6 +80,8 @@ const renderApp = () => {
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/dashboard" element={<SKFDashboard />} />
           <Route path="/payment-gateway" element={<PaymentGateway />} />
+          <Route path="/login/staff" element={<StaffLogin />} />
+          <Route path="/staff-portal" element={<StaffPortal />} />
           <Route
             path="/events"
             element={

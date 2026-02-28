@@ -12,6 +12,7 @@ require_once __DIR__ . '/routes/students.php';
 require_once __DIR__ . '/routes/payments.php';
 require_once __DIR__ . '/routes/admin.php';
 require_once __DIR__ . '/routes/super_admin.php';
+require_once __DIR__ . '/routes/staff.php';
 
 apply_cors();
 
@@ -90,6 +91,26 @@ try {
 
     if ($method === 'POST' && $path === '/admin/delete') {
         admin_delete();
+    }
+
+    if ($method === 'POST' && $path === '/staff/create') {
+        staff_create();
+    }
+
+    if ($method === 'POST' && $path === '/staff/login') {
+        staff_login();
+    }
+
+    if ($method === 'POST' && $path === '/staff/logout') {
+        staff_logout();
+    }
+
+    if ($method === 'GET' && $path === '/staff/transactions') {
+        staff_transactions();
+    }
+
+    if ($method === 'POST' && $path === '/staff/gate-entry') {
+        staff_mark_gate_entry();
     }
 
     json_response(['success' => false, 'message' => 'Route not found', 'route' => $path], 404);

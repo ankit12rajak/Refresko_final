@@ -349,6 +349,10 @@ const Login = () => {
               </Link>
             </>
           )}
+
+          <Link to="/login/staff" className="switch-link">
+            CR / Volunteer Login →
+          </Link>
         </motion.div>
       </motion.div>
     </div>

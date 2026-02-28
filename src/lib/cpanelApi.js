@@ -300,5 +300,77 @@ export const cpanelApi = {
       },
       body: JSON.stringify({ admin_id: adminId })
     })
+  },
+
+  createStaffAccount: async ({
+    name,
+    username,
+    password,
+    role,
+    departmentScope,
+    yearScope,
+    superAdminUsername,
+    superAdminPassword
+  }) => {
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+
+    return request('/staff/create', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        name,
+        username,
+        password,
+        role,
+        department_scope: departmentScope,
+        year_scope: yearScope,
+        super_admin_username: superAdminUsername,
+        super_admin_password: superAdminPassword
+      })
+    })
+  },
+
+  staffLogin: async ({ username, password }) => {
+    return request('/staff/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ username, password })
+    })
+  },
+
+  staffLogout: async (token) => {
+    return request('/staff/logout', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+  },
+
+  staffTransactions: async (token) => {
+    return request('/staff/transactions', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+  },
+
+  markGateEntry: async ({ token, studentCode, qrData, day }) => {
+    return request('/staff/gate-entry', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        student_code: studentCode,
+        qr_data: qrData,
+        day
+      })
+    })
   }
 }

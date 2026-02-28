@@ -9,6 +9,7 @@ import PaymentManagement from '../../components/Admin/PaymentManagement'
 import Analytics from '../../components/Admin/Analytics'
 import StudentManagement from '../../components/SuperAdmin/StudentManagement'
 import AdminLoginManagement from '../../components/SuperAdmin/AdminLoginManagement'
+import StaffAccountManagement from '../../components/SuperAdmin/StaffAccountManagement'
 import './SuperAdmin.css'
 
 const SuperAdmin = () => {
@@ -340,6 +341,21 @@ const SuperAdmin = () => {
             <span>ADMIN LOGIN CONTROL</span>
           </motion.button>
 
+          <motion.button
+            className={`nav-tab interactive ${activeTab === 'staff-accounts' ? 'active' : ''}`}
+            onClick={() => setActiveTab('staff-accounts')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>STAFF ACCOUNT CONTROL</span>
+          </motion.button>
+
 
         </div>
       </nav>
@@ -416,6 +432,18 @@ const SuperAdmin = () => {
               transition={{ duration: 0.3 }}
             >
               <AdminLoginManagement />
+            </motion.div>
+          )}
+
+          {activeTab === 'staff-accounts' && (
+            <motion.div
+              key="staff-accounts"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <StaffAccountManagement superAdminUsername={loggedInUser} />
             </motion.div>
           )}
         </AnimatePresence>
