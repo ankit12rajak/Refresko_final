@@ -160,14 +160,21 @@ function students_get_one(): void
 function students_upsert_profile(): void
 {
     $payload = get_json_input();
-    require_fields($payload, ['student_code', 'name', 'phone']);
+    
+    // student_code is always required; name and phone are required ONLY for full profile setup (profile_completed=true)
+    require_fields($payload, ['student_code']);
 
     $studentCode = strtoupper(trim((string)$payload['student_code']));
     $originalStudentCode = strtoupper(trim((string)($payload['original_student_code'] ?? '')));
     $name = trim((string)($payload['name'] ?? ''));
+    $isFullProfileSetup = boolish_to_int($payload['profile_completed'] ?? false) === 1;
 
-    if ($studentCode === '' || $name === '') {
-        json_response(['success' => false, 'message' => 'Invalid student profile payload'], 422);
+    if ($studentCode === '') {
+        json_response(['success' => false, 'message' => 'Invalid student profile payload: student_code required'], 422);
+    }
+
+    if ($isFullProfileSetup && $name === '') {
+        json_response(['success' => false, 'message' => 'Invalid student profile payload: name required for profile setup'], 422);
     }
 
     $pdo = db();
@@ -184,12 +191,12 @@ function students_upsert_profile(): void
     $foodPreference = normalize_food_preference($payload['food_preference'] ?? null);
 
     $lookupCode = $originalStudentCode !== '' ? $originalStudentCode : $studentCode;
-    $findExistingStmt = $pdo->prepare('SELECT id FROM student_details WHERE UPPER(TRIM(student_code)) = :student_code LIMIT 1');
+    $findExistingStmt = $pdo->prepare('SELECT id, name, email, phone, department, year FROM student_details WHERE UPPER(TRIM(student_code)) = :student_code LIMIT 1');
     $findExistingStmt->execute([':student_code' => $lookupCode]);
     $existingRow = $findExistingStmt->fetch();
 
     if (!$existingRow && $email !== '') {
-        $findByEmailStmt = $pdo->prepare('SELECT id, student_code
+        $findByEmailStmt = $pdo->prepare('SELECT id, student_code, name, email, phone, department, year
                                           FROM student_details
                                           WHERE LOWER(TRIM(email)) = :email
                                           ORDER BY id DESC
@@ -203,6 +210,24 @@ function students_upsert_profile(): void
     }
 
     if ($existingRow) {
+        // Preserve existing values for fields not provided in the request (partial update support)
+        if ($name === '') {
+            $name = trim((string)($existingRow['name'] ?? $name));
+        }
+        if ($email === '') {
+            $email = strtolower(trim((string)($existingRow['email'] ?? $email)));
+        }
+        if ($phone === '') {
+            $phone = trim((string)($existingRow['phone'] ?? $phone));
+        }
+        if ($department === '') {
+            $department = trim((string)($existingRow['department'] ?? $department));
+        }
+        if ($year === '') {
+            $year = trim((string)($existingRow['year'] ?? $year));
+        }
+
+        // Fetch existing status flags and preserve if not explicitly provided
         $existingStatusStmt = $pdo->prepare('SELECT payment_completion, gate_pass_created, payment_approved, food_included, food_preference
                                              FROM student_details
                                              WHERE UPPER(TRIM(student_code)) = :student_code
@@ -212,11 +237,22 @@ function students_upsert_profile(): void
         $existingStatus = $existingStatusStmt->fetch();
 
         if ($existingStatus) {
-            $paymentCompletion = boolish_to_int($existingStatus['payment_completion'] ?? 0);
-            $gatePassCreated = boolish_to_int($existingStatus['gate_pass_created'] ?? 0);
-            $paymentApproved = normalize_payment_approved_state($existingStatus['payment_approved'] ?? 'pending');
-            $foodIncluded = boolish_to_int($existingStatus['food_included'] ?? 0);
-            $foodPreference = normalize_food_preference($existingStatus['food_preference'] ?? null);
+            // Only override if explicitly provided in payload
+            if (!isset($payload['payment_completion'])) {
+                $paymentCompletion = boolish_to_int($existingStatus['payment_completion'] ?? 0);
+            }
+            if (!isset($payload['gate_pass_created'])) {
+                $gatePassCreated = boolish_to_int($existingStatus['gate_pass_created'] ?? 0);
+            }
+            if (!isset($payload['payment_approved'])) {
+                $paymentApproved = normalize_payment_approved_state($existingStatus['payment_approved'] ?? 'pending');
+            }
+            if (!isset($payload['food_included'])) {
+                $foodIncluded = boolish_to_int($existingStatus['food_included'] ?? 0);
+            }
+            if (!isset($payload['food_preference'])) {
+                $foodPreference = normalize_food_preference($existingStatus['food_preference'] ?? null);
+            }
         }
 
         $updateStmt = $pdo->prepare('UPDATE student_details

@@ -409,10 +409,15 @@ const PaymentGateway = () => {
 
       if (cpanelApi.isConfigured()) {
         const studentCode = (studentProfile.studentId || '').trim().toUpperCase()
-        if (studentCode) {
+        if (studentCode && studentProfile.name && studentProfile.phone) {
           try {
             await cpanelApi.updateStudent({
               student_code: studentCode,
+              name: studentProfile.name,
+              phone: studentProfile.phone,
+              email: studentProfile.email || '',
+              department: studentProfile.department || '',
+              year: studentProfile.year || '',
               payment_completion: 1,
               gate_pass_created: 0,
               payment_approved: 'pending',
