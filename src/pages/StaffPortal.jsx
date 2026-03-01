@@ -78,6 +78,14 @@ const StaffPortal = () => {
     [transactions]
   )
 
+  const getStatusClassName = (statusValue) => {
+    const normalized = String(statusValue || '').toLowerCase()
+    if (normalized === 'approved' || normalized === 'completed') return 'status-chip status-success'
+    if (normalized === 'pending') return 'status-chip status-pending'
+    if (normalized === 'declined' || normalized === 'rejected') return 'status-chip status-danger'
+    return 'status-chip'
+  }
+
   const handleLogout = async () => {
     try {
       if (token) {
@@ -118,137 +126,150 @@ const StaffPortal = () => {
     <div className="staff-page">
       <div className="hex-grid-overlay" />
 
-      <div className="staff-header">
-        <div>
-          <h1>STAFF PORTAL</h1>
-          <p>{staffName} · {staffRole.toUpperCase()}</p>
+      <div className="staff-shell">
+
+        <div className="staff-header">
+          <div>
+            <h1>STAFF PORTAL</h1>
+            <p>{staffName} · {staffRole.toUpperCase()}</p>
+          </div>
+          <div className="staff-actions">
+            <button type="button" className="staff-btn" onClick={loadData}>Refresh</button>
+            <button type="button" className="staff-btn staff-btn-danger" onClick={handleLogout}>Logout</button>
+          </div>
         </div>
-        <div className="staff-actions">
-          <button type="button" onClick={loadData}>Refresh</button>
-          <button type="button" onClick={handleLogout}>Logout</button>
-        </div>
+
+        {error ? <div className="staff-error">{error}</div> : null}
+
+        {isLoading ? <div className="staff-card">Loading...</div> : (
+          <>
+            <div className="staff-grid">
+              <div className="staff-card">
+                <h3>Paid / Submitted</h3>
+                <p className="staff-number">{summary?.submitted_payments ?? paidTransactions.length}</p>
+              </div>
+              <div className="staff-card">
+                <h3>Pending Payment</h3>
+                <p className="staff-number">{summary?.pending_payment_students ?? pendingList.length}</p>
+              </div>
+              <div className="staff-card">
+                <h3>Pending List</h3>
+                <p className="staff-number">{pendingList.length}</p>
+              </div>
+            </div>
+
+            <div className="staff-card">
+              <h2>Payment Records</h2>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Student Code</th>
+                      <th>Name</th>
+                      <th>Mobile</th>
+                      {!isCr ? <th>Amount</th> : null}
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.length === 0 ? (
+                      <tr>
+                        <td colSpan={isCr ? 4 : 5} className="empty-row">No payment records found</td>
+                      </tr>
+                    ) : transactions.map((row) => (
+                      <tr key={row.payment_id || `${row.student_code}-${row.transaction_id || row.created_at || ''}`}>
+                        <td>{row.student_code}</td>
+                        <td>{row.student_name}</td>
+                        <td>{row.phone || '-'}</td>
+                        {!isCr ? <td>₹{row.amount}</td> : null}
+                        <td>
+                          <span className={getStatusClassName(row.payment_approved || row.status)}>
+                            {row.payment_approved || row.status || 'unknown'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="staff-card">
+              <h2>Pending List</h2>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Student Code</th>
+                      <th>Name</th>
+                      <th>Mobile</th>
+                      <th>Department</th>
+                      <th>Year</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingList.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="empty-row">No pending students</td>
+                      </tr>
+                    ) : pendingList.map((row) => (
+                      <tr key={`${row.student_code}-${row.name}`}>
+                        <td>{row.student_code}</td>
+                        <td>{row.name}</td>
+                        <td>{row.phone || '-'}</td>
+                        <td>{row.department}</td>
+                        <td>{row.year}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {isVolunteer ? (
+              <div className="staff-card">
+                <h2>Gate Entry (Volunteer Only)</h2>
+                <p>Scan gate pass QR data or manually type student code. One entry allowed per day.</p>
+
+                <form onSubmit={handleMarkEntry} className="gate-form">
+                  <label>
+                    Day
+                    <select value={day} onChange={(e) => setDay(e.target.value)}>
+                      <option value="day1">Day 1</option>
+                      <option value="day2">Day 2</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Student Code (Manual)
+                    <input
+                      value={studentCode}
+                      onChange={(e) => setStudentCode(e.target.value)}
+                      placeholder="SKFGI\2024\BCA\0032"
+                    />
+                  </label>
+
+                  <label>
+                    QR Data (Scan Input)
+                    <textarea
+                      value={qrData}
+                      onChange={(e) => setQrData(e.target.value)}
+                      placeholder='Paste scanned QR text or JSON payload'
+                      rows={4}
+                    />
+                  </label>
+
+                  <button type="submit" className="staff-btn">Mark Entry</button>
+                </form>
+
+                {entryMessage ? <div className="staff-info">{entryMessage}</div> : null}
+              </div>
+            ) : null}
+
+            <Link to="/" className="staff-home-link">← Back to Home</Link>
+          </>
+        )}
       </div>
-
-      {error ? <div className="staff-error">{error}</div> : null}
-
-      {isLoading ? <div className="staff-card">Loading...</div> : (
-        <>
-          <div className="staff-grid">
-            <div className="staff-card">
-              <h3>Paid / Submitted</h3>
-              <p className="staff-number">{summary?.submitted_payments ?? paidTransactions.length}</p>
-            </div>
-            <div className="staff-card">
-              <h3>Pending Payment</h3>
-              <p className="staff-number">{summary?.pending_payment_students ?? pendingList.length}</p>
-            </div>
-            <div className="staff-card">
-              <h3>Pending List</h3>
-              <p className="staff-number">{pendingList.length}</p>
-            </div>
-          </div>
-
-          <div className="staff-card">
-            <h2>Transaction Details</h2>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Student Code</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    {!isCr ? <th>Amount</th> : null}
-                    <th>Status</th>
-                    <th>UTR</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((row) => (
-                    <tr key={row.payment_id || `${row.student_code}-${row.utr_no}`}>
-                      <td>{row.student_code}</td>
-                      <td>{row.student_name}</td>
-                      <td>{row.phone || '-'}</td>
-                      {!isCr ? <td>₹{row.amount}</td> : null}
-                      <td>{row.payment_approved || row.status}</td>
-                      <td>{row.utr_no}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="staff-card">
-            <h2>Pending List</h2>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Student Code</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Department</th>
-                    <th>Year</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingList.map((row) => (
-                    <tr key={`${row.student_code}-${row.name}`}>
-                      <td>{row.student_code}</td>
-                      <td>{row.name}</td>
-                      <td>{row.phone || '-'}</td>
-                      <td>{row.department}</td>
-                      <td>{row.year}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {isVolunteer ? (
-            <div className="staff-card">
-              <h2>Gate Entry (Volunteer Only)</h2>
-              <p>Scan gate pass QR data or manually type student code. One entry allowed per day.</p>
-
-              <form onSubmit={handleMarkEntry} className="gate-form">
-                <label>
-                  Day
-                  <select value={day} onChange={(e) => setDay(e.target.value)}>
-                    <option value="day1">Day 1</option>
-                    <option value="day2">Day 2</option>
-                  </select>
-                </label>
-
-                <label>
-                  Student Code (Manual)
-                  <input
-                    value={studentCode}
-                    onChange={(e) => setStudentCode(e.target.value)}
-                    placeholder="SKFGI\\2024\\BCA\\0032"
-                  />
-                </label>
-
-                <label>
-                  QR Data (Scan Input)
-                  <textarea
-                    value={qrData}
-                    onChange={(e) => setQrData(e.target.value)}
-                    placeholder='Paste scanned QR text or JSON payload'
-                    rows={4}
-                  />
-                </label>
-
-                <button type="submit">Mark Entry</button>
-              </form>
-
-              {entryMessage ? <div className="staff-info">{entryMessage}</div> : null}
-            </div>
-          ) : null}
-
-          <Link to="/" className="staff-home-link">← Back to Home</Link>
-        </>
-      )}
     </div>
   )
 }

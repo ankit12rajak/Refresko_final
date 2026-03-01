@@ -332,6 +332,51 @@ export const cpanelApi = {
     })
   },
 
+  listStaffAccounts: async ({ superAdminUsername, superAdminPassword }) => {
+    return request('/staff/list', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        super_admin_username: superAdminUsername,
+        super_admin_password: superAdminPassword
+      })
+    })
+  },
+
+  updateStaffAccount: async ({
+    staffId,
+    name,
+    username,
+    role,
+    departmentScope,
+    yearScope,
+    isActive,
+    password,
+    superAdminUsername,
+    superAdminPassword
+  }) => {
+    return request('/staff/update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        staff_id: staffId,
+        name,
+        username,
+        role,
+        department_scope: departmentScope,
+        year_scope: yearScope,
+        is_active: isActive,
+        password,
+        super_admin_username: superAdminUsername,
+        super_admin_password: superAdminPassword
+      })
+    })
+  },
+
   staffLogin: async ({ username, password }) => {
     return request('/staff/login', {
       method: 'POST',

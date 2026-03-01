@@ -157,8 +157,36 @@ function extract_student_code_parts(string $studentCode): array
     }
 
     if ($admissionYear === null) {
-        if (preg_match('/(?:^|[\\\/\-_\s])((?:19|20)\d{2})(?:$|[\\\/\-_\s])/', $raw, $yearMatch) === 1) {
-            $admissionYear = (int)$yearMatch[1];
+        if (preg_match('/((?:19|20)\d{2})/', $raw, $yearMatch) === 1) {
+            $candidateYear = (int)$yearMatch[1];
+            $maxReasonableYear = (int)gmdate('Y') + 1;
+            if ($candidateYear >= 1990 && $candidateYear <= $maxReasonableYear) {
+                $admissionYear = $candidateYear;
+            }
+        }
+    }
+
+    if ($admissionYear === null) {
+        if (preg_match('/^\D*(\d{2})[A-Za-z]/', $raw, $shortYearMatch) === 1) {
+            $yy = (int)$shortYearMatch[1];
+            $currentYear = (int)gmdate('Y');
+            $candidateYear = 2000 + $yy;
+
+            if ($candidateYear > ($currentYear + 1)) {
+                $candidateYear -= 100;
+            }
+
+            if ($candidateYear >= 1990 && $candidateYear <= ($currentYear + 1)) {
+                $admissionYear = $candidateYear;
+            }
+        }
+    }
+
+    if ($department === '') {
+        if (preg_match('/(?:19|20)\d{2}\s*[-_\/]?\s*([A-Za-z]{2,12})/', $raw, $deptMatch) === 1) {
+            $department = $deptMatch[1];
+        } elseif (preg_match('/^\D*\d{2}\s*[-_\/]?\s*([A-Za-z]{2,12})/', $raw, $deptMatch) === 1) {
+            $department = $deptMatch[1];
         }
     }
 
@@ -451,6 +479,208 @@ function staff_create(): void
     json_response(['success' => true, 'message' => 'Staff account created'], 201);
 }
 
+function staff_list(): void
+{
+    $payload = get_json_input();
+
+    $pdo = db();
+    ensure_staff_schema($pdo);
+    require_super_admin_for_staff_create($pdo, $payload);
+
+    $hasScopeColumns = staff_scope_columns_available($pdo);
+
+    if ($hasScopeColumns) {
+        $stmt = $pdo->prepare('SELECT id,
+                                      full_name,
+                                      username,
+                                      role,
+                                      department_scope,
+                                      year_scope,
+                                      is_active,
+                                      created_at,
+                                      updated_at
+                               FROM event_staff_users
+                               ORDER BY created_at DESC, id DESC');
+    } else {
+        $stmt = $pdo->prepare("SELECT id,
+                                      full_name,
+                                      username,
+                                      role,
+                                      '' AS department_scope,
+                                      '' AS year_scope,
+                                      is_active,
+                                      created_at,
+                                      updated_at
+                               FROM event_staff_users
+                               ORDER BY created_at DESC, id DESC");
+    }
+
+    $stmt->execute();
+    $rows = $stmt->fetchAll();
+
+    $accounts = array_map(static function (array $row): array {
+        return [
+            'id' => (int)($row['id'] ?? 0),
+            'name' => (string)($row['full_name'] ?? ''),
+            'username' => (string)($row['username'] ?? ''),
+            'role' => (string)($row['role'] ?? ''),
+            'department_scope' => (string)($row['department_scope'] ?? ''),
+            'year_scope' => (string)($row['year_scope'] ?? ''),
+            'is_active' => (int)($row['is_active'] ?? 0),
+            'created_at' => (string)($row['created_at'] ?? ''),
+            'updated_at' => (string)($row['updated_at'] ?? ''),
+        ];
+    }, is_array($rows) ? $rows : []);
+
+    json_response([
+        'success' => true,
+        'accounts' => $accounts,
+    ]);
+}
+
+function staff_update(): void
+{
+    $payload = get_json_input();
+    require_fields($payload, ['staff_id']);
+
+    $staffId = (int)($payload['staff_id'] ?? 0);
+    if ($staffId <= 0) {
+        json_response(['success' => false, 'message' => 'Valid staff_id is required'], 422);
+    }
+
+    $pdo = db();
+    ensure_staff_schema($pdo);
+    $superAdmin = require_super_admin_for_staff_create($pdo, $payload);
+
+    $hasScopeColumns = staff_scope_columns_available($pdo);
+
+    if ($hasScopeColumns) {
+        $find = $pdo->prepare('SELECT id, full_name, username, role, department_scope, year_scope, is_active
+                               FROM event_staff_users
+                               WHERE id = :id
+                               LIMIT 1');
+    } else {
+        $find = $pdo->prepare("SELECT id, full_name, username, role, '' AS department_scope, '' AS year_scope, is_active
+                               FROM event_staff_users
+                               WHERE id = :id
+                               LIMIT 1");
+    }
+    $find->execute([':id' => $staffId]);
+    $existing = $find->fetch();
+
+    if (!$existing) {
+        json_response(['success' => false, 'message' => 'Staff account not found'], 404);
+    }
+
+    $nextName = array_key_exists('name', $payload)
+        ? trim((string)$payload['name'])
+        : (string)($existing['full_name'] ?? '');
+    $nextUsername = array_key_exists('username', $payload)
+        ? strtolower(trim((string)$payload['username']))
+        : strtolower((string)($existing['username'] ?? ''));
+    $nextRole = array_key_exists('role', $payload)
+        ? strtolower(trim((string)$payload['role']))
+        : strtolower((string)($existing['role'] ?? ''));
+    $nextIsActive = array_key_exists('is_active', $payload)
+        ? ((int)$payload['is_active'] === 1 ? 1 : 0)
+        : (int)($existing['is_active'] ?? 1);
+
+    if (!in_array($nextRole, ['cr', 'volunteer'], true)) {
+        json_response(['success' => false, 'message' => 'role must be cr or volunteer'], 422);
+    }
+
+    if ($nextName === '' || $nextUsername === '') {
+        json_response(['success' => false, 'message' => 'name and username cannot be empty'], 422);
+    }
+
+    $nextDepartmentScope = array_key_exists('department_scope', $payload)
+        ? trim((string)$payload['department_scope'])
+        : trim((string)($existing['department_scope'] ?? ''));
+    $nextYearScope = array_key_exists('year_scope', $payload)
+        ? trim((string)$payload['year_scope'])
+        : trim((string)($existing['year_scope'] ?? ''));
+
+    if ($nextRole === 'volunteer') {
+        $nextDepartmentScope = '';
+        $nextYearScope = '';
+    }
+
+    if ($nextRole === 'cr' && ($nextDepartmentScope === '' || $nextYearScope === '')) {
+        json_response(['success' => false, 'message' => 'department_scope and year_scope are required for CR'], 422);
+    }
+
+    if ($nextRole === 'cr' && !$hasScopeColumns) {
+        json_response([
+            'success' => false,
+            'message' => 'Database migration required: add department_scope and year_scope columns before assigning CR scope.'
+        ], 500);
+    }
+
+    $password = array_key_exists('password', $payload)
+        ? trim((string)$payload['password'])
+        : '';
+    if ($password !== '' && strlen($password) < 6) {
+        json_response(['success' => false, 'message' => 'Password must be at least 6 characters'], 422);
+    }
+
+    $sqlParts = [
+        'full_name = :full_name',
+        'username = :username',
+        'role = :role',
+        'is_active = :is_active',
+    ];
+    $params = [
+        ':full_name' => $nextName,
+        ':username' => $nextUsername,
+        ':role' => $nextRole,
+        ':is_active' => $nextIsActive,
+        ':id' => $staffId,
+    ];
+
+    if ($hasScopeColumns) {
+        $sqlParts[] = 'department_scope = :department_scope';
+        $sqlParts[] = 'year_scope = :year_scope';
+        $params[':department_scope'] = $nextDepartmentScope !== '' ? $nextDepartmentScope : null;
+        $params[':year_scope'] = $nextYearScope !== '' ? $nextYearScope : null;
+    }
+
+    if ($password !== '') {
+        $sqlParts[] = 'password_hash = :password_hash';
+        $params[':password_hash'] = password_hash($password, PASSWORD_BCRYPT);
+    }
+
+    $updateSql = 'UPDATE event_staff_users SET ' . implode(', ', $sqlParts) . ' WHERE id = :id LIMIT 1';
+    $updateStmt = $pdo->prepare($updateSql);
+
+    try {
+        $updateStmt->execute($params);
+    } catch (Throwable $error) {
+        if ((string)$error->getCode() === '23000') {
+            json_response(['success' => false, 'message' => 'Username already exists'], 409);
+        }
+
+        json_response([
+            'success' => false,
+            'message' => 'Unable to update staff account: ' . $error->getMessage(),
+        ], 500);
+    }
+
+    log_event('staff_update', 'event_staff_user', (string)$staffId, [
+        'name' => $nextName,
+        'username' => $nextUsername,
+        'role' => $nextRole,
+        'department_scope' => $nextDepartmentScope,
+        'year_scope' => $nextYearScope,
+        'is_active' => $nextIsActive,
+        'password_changed' => $password !== '',
+    ], (string)($superAdmin['username'] ?? 'superadmin'));
+
+    json_response([
+        'success' => true,
+        'message' => 'Staff account updated successfully',
+    ]);
+}
+
 function staff_login(): void
 {
     $payload = get_json_input();
@@ -536,20 +766,18 @@ function staff_transactions(): void
     $departmentScope = trim((string)($staff['department_scope'] ?? ''));
     $yearScope = trim((string)($staff['year_scope'] ?? ''));
 
-    $paymentsSql = 'SELECT payment_id, transaction_id, utr_no, student_code, student_name, department, year, amount, status, payment_approved, created_at
-                    FROM payments';
-    $paymentsParams = [];
-
-        $pendingSql = "SELECT student_code, name, department, year, payment_completion, payment_approved
-                                     FROM student_details
-                                     WHERE profile_completed = 0
-                                         AND (
-                                                payment_completion = 0
-                                                OR payment_approved IS NULL
-                                                OR TRIM(payment_approved) = ''
-                                                OR LOWER(TRIM(payment_approved)) <> 'approved'
-                                         )";
-    $pendingParams = [];
+    $studentsSql = 'SELECT student_code,
+                           name,
+                           phone,
+                           department,
+                           year,
+                           payment_completion,
+                           payment_approved,
+                           updated_at,
+                           id
+                    FROM student_details
+                    WHERE TRIM(COALESCE(student_code, "")) <> ""';
+    $studentsParams = [];
 
     if ($staffRole === 'cr') {
         if ($departmentScope === '' || $yearScope === '') {
@@ -557,38 +785,94 @@ function staff_transactions(): void
         }
 
         $scopeDepartmentUpper = normalize_scope_text($departmentScope);
-        $paymentsSql .= ' WHERE (UPPER(TRIM(department)) = :department_scope OR department IS NULL OR TRIM(department) = "")';
-        $paymentsParams[':department_scope'] = $scopeDepartmentUpper;
-
-        $pendingSql .= ' AND (UPPER(TRIM(department)) = :department_scope OR department IS NULL OR TRIM(department) = "")';
-        $pendingParams[':department_scope'] = $scopeDepartmentUpper;
+        $studentsSql .= ' AND (UPPER(TRIM(department)) = :department_scope OR department IS NULL OR TRIM(department) = "")';
+        $studentsParams[':department_scope'] = $scopeDepartmentUpper;
     }
 
-    $paymentsSql .= ' ORDER BY id DESC LIMIT 1000';
-    $paymentsStmt = $pdo->prepare($paymentsSql);
-    foreach ($paymentsParams as $key => $value) {
-        $paymentsStmt->bindValue($key, $value, PDO::PARAM_STR);
+    $studentsSql .= ' ORDER BY updated_at DESC, id DESC LIMIT 5000';
+    $studentsStmt = $pdo->prepare($studentsSql);
+    foreach ($studentsParams as $key => $value) {
+        $studentsStmt->bindValue($key, $value, PDO::PARAM_STR);
     }
-    $paymentsStmt->execute();
-    $payments = $paymentsStmt->fetchAll();
-
-    $pendingSql .= ' ORDER BY updated_at DESC, id DESC LIMIT 1000';
-    $pendingStmt = $pdo->prepare($pendingSql);
-    foreach ($pendingParams as $key => $value) {
-        $pendingStmt->bindValue($key, $value, PDO::PARAM_STR);
+    $studentsStmt->execute();
+    $students = $studentsStmt->fetchAll();
+    if (!is_array($students)) {
+        $students = [];
     }
-    $pendingStmt->execute();
-    $pendingStudents = $pendingStmt->fetchAll();
 
     if ($staffRole === 'cr') {
-        $payments = array_values(array_filter($payments, static function (array $row) use ($departmentScope, $yearScope): bool {
-            return row_matches_cr_scope($row, $departmentScope, $yearScope);
-        }));
-
-        $pendingStudents = array_values(array_filter($pendingStudents, static function (array $row) use ($departmentScope, $yearScope): bool {
-            return row_matches_cr_scope($row, $departmentScope, $yearScope);
+        $students = array_values(array_filter($students, static function (array $row) use ($departmentScope, $yearScope): bool {
+            return row_matches_cr_scope([
+                'student_code' => (string)($row['student_code'] ?? ''),
+                'department' => (string)($row['department'] ?? ''),
+                'year' => (string)($row['year'] ?? ''),
+            ], $departmentScope, $yearScope);
         }));
     }
+
+    $scopedStudentCodeSet = [];
+    foreach ($students as $studentRow) {
+        $code = strtoupper(trim((string)($studentRow['student_code'] ?? '')));
+        if ($code !== '') {
+            $scopedStudentCodeSet[$code] = true;
+        }
+    }
+
+    $paidCodesStmt = $pdo->prepare('SELECT DISTINCT UPPER(TRIM(student_code)) AS student_code
+                                    FROM payments
+                                    WHERE student_code IS NOT NULL
+                                      AND TRIM(student_code) <> ""');
+    $paidCodesStmt->execute();
+    $paidCodeRows = $paidCodesStmt->fetchAll();
+
+    $paidCodeSet = [];
+    if (is_array($paidCodeRows)) {
+        foreach ($paidCodeRows as $paidRow) {
+            $paidCode = strtoupper(trim((string)($paidRow['student_code'] ?? '')));
+            if ($paidCode !== '') {
+                $paidCodeSet[$paidCode] = true;
+            }
+        }
+    }
+
+    $pendingStudents = array_values(array_filter($students, static function (array $row) use ($paidCodeSet): bool {
+        $code = strtoupper(trim((string)($row['student_code'] ?? '')));
+        if ($code === '') {
+            return false;
+        }
+        return !isset($paidCodeSet[$code]);
+    }));
+
+    $paymentsSql = 'SELECT p.payment_id,
+                           p.transaction_id,
+                           p.utr_no,
+                           p.student_code,
+                           p.student_name,
+                           p.department,
+                           p.year,
+                           p.amount,
+                           p.status,
+                           p.payment_approved,
+                           p.created_at,
+                           COALESCE(sd.phone, "") AS phone
+                    FROM payments p
+                    LEFT JOIN student_details sd ON UPPER(TRIM(sd.student_code)) = UPPER(TRIM(p.student_code))
+                    ORDER BY p.id DESC
+                    LIMIT 5000';
+    $paymentsStmt = $pdo->prepare($paymentsSql);
+    $paymentsStmt->execute();
+    $payments = $paymentsStmt->fetchAll();
+    if (!is_array($payments)) {
+        $payments = [];
+    }
+
+    $payments = array_values(array_filter($payments, static function (array $row) use ($scopedStudentCodeSet): bool {
+        $code = strtoupper(trim((string)($row['student_code'] ?? '')));
+        if ($code === '') {
+            return false;
+        }
+        return isset($scopedStudentCodeSet[$code]);
+    }));
 
     $payments = array_map(static function (array $row): array {
         $studentCode = trim((string)($row['student_code'] ?? ''));

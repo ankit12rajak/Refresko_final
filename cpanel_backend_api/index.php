@@ -97,6 +97,14 @@ try {
         staff_create();
     }
 
+    if ($method === 'POST' && $path === '/staff/list') {
+        staff_list();
+    }
+
+    if ($method === 'POST' && $path === '/staff/update') {
+        staff_update();
+    }
+
     if ($method === 'POST' && $path === '/staff/login') {
         staff_login();
     }
