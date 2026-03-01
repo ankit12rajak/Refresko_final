@@ -68,6 +68,18 @@ const TechTeam = () => {
   const [activeMember, setActiveMember] = useState(0)
 
   useEffect(() => {
+    if (!isInView || teamMembers.length <= 1) {
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActiveMember((prevIndex) => (prevIndex + 1) % teamMembers.length)
+    }, 2800)
+
+    return () => window.clearInterval(intervalId)
+  }, [isInView])
+
+  useEffect(() => {
     if (scrollRef.current) {
       const container = scrollRef.current
       const cards = container.querySelectorAll('.team-member-card')

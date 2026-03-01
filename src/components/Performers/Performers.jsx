@@ -69,6 +69,18 @@ const Performers = () => {
   const [activePerformer, setActivePerformer] = useState(0)
 
   useEffect(() => {
+    if (!isInView || performers.length <= 1) {
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      setActivePerformer((prevIndex) => (prevIndex + 1) % performers.length)
+    }, 2800)
+
+    return () => window.clearInterval(intervalId)
+  }, [isInView])
+
+  useEffect(() => {
     // Auto-scroll to active performer on mobile
     if (scrollRef.current) {
       const container = scrollRef.current
