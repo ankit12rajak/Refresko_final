@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import './Events.css'
 
 const Events = () => {
@@ -18,54 +19,38 @@ const Events = () => {
       </motion.h2>
 
       <div className="events-container">
-        {/* Coming Soon Message */}
         <motion.div
-          className="coming-soon-message"
+          className="event-banner-wrapper"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={isInView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.2 }}
-          style={{
-            textAlign: 'center',
-            padding: '80px 40px',
-            minHeight: '400px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '20px'
-          }}
         >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            style={{
-              fontSize: 'clamp(2rem, 5vw, 4rem)',
-              fontWeight: '700',
-              background: 'linear-gradient(135deg, #ff0040 0%, #ff4d6a 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '2px',
-              textTransform: 'uppercase'
-            }}
-          >
-            Coming Soon
-          </motion.div>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            style={{
-              fontSize: 'clamp(1rem, 2vw, 1.2rem)',
-              color: 'rgba(255, 255, 255, 0.7)',
-              maxWidth: '600px',
-              lineHeight: '1.6'
-            }}
-          >
-            Exciting events and competitions are on the way! Stay tuned for updates.
-          </motion.p>
+          <img
+            src="/event%20banner.png"
+            alt="Events banner"
+            className="event-banner-image"
+            loading="lazy"
+            decoding="async"
+          />
         </motion.div>
       </div>
+
+      <motion.div
+        className="register-now-events"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.8, delay: 0.7 }}
+      >
+        <a
+          href="https://forms.gle/R9icZUxEevYpWe6L8"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-outline interactive"
+        >
+          REGISTER NOW
+          <span className="btn-arrow">→</span>
+        </a>
+      </motion.div>
 
       <motion.div
         className="view-all-events"
@@ -73,10 +58,10 @@ const Events = () => {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8, delay: 0.8 }}
       >
-        <button className="btn-outline interactive">
+        <Link to="/events" className="btn-outline interactive">
           VIEW ALL EVENTS
           <span className="btn-arrow">→</span>
-        </button>
+        </Link>
       </motion.div>
     </section>
   )

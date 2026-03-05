@@ -85,14 +85,14 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 2 }}
         >
-          {/* <div className="cta-group">
-            <Link to="/register" className="btn-primary magnetic-btn skewed-btn interactive">
+          <div className="cta-group">
+            <Link to="/events" className="btn-primary magnetic-btn skewed-btn interactive">
               <span>REGISTER FOR EVENTS</span>
             </Link>
             <p className="cta-description">
-              For participants from other colleges
+              Participate for the Events
             </p>
-          </div> */}
+          </div>
           
           <div className="cta-group">
             <Link to="/login" className="btn-secondary magnetic-btn glass interactive">

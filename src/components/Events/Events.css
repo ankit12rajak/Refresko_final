@@ -23,6 +23,19 @@
   margin: 0 auto;
 }
 
+.event-banner-wrapper {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.event-banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
 /* Featured Event */
 .featured-event {
   padding: 40px;
@@ -219,9 +232,14 @@
 }
 
 /* View All Button */
+.register-now-events {
+  text-align: center;
+  margin-top: 40px;
+}
+
 .view-all-events {
   text-align: center;
-  margin-top: 60px;
+  margin-top: 20px;
 }
 
 .btn-outline {
@@ -266,6 +284,10 @@
 @media (max-width: 768px) {
   .events {
     padding: 80px 20px;
+  }
+
+  .event-banner-image {
+    border-radius: 12px;
   }
 
   .events-grid {

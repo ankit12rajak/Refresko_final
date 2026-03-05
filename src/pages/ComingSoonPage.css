@@ -60,6 +60,25 @@
   z-index: 5;
 }
 
+.events-only-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding-top: 24px;
+}
+
+.events-page-heading {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-secondary);
+  margin-bottom: 20px;
+}
+
 .coming-soon-badge {
   font-family: var(--font-accent);
   font-size: 0.8rem;
@@ -91,6 +110,19 @@
   color: var(--color-text-muted);
   max-width: 650px;
   margin-bottom: 32px;
+}
+
+.coming-soon-banner {
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.coming-soon-banner-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  object-fit: cover;
 }
 
 .coming-soon-launch {
@@ -164,6 +196,21 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.coming-soon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.events-only-main .coming-soon-banner {
+  max-width: 1120px;
+}
+
+.events-only-main .coming-soon-actions {
+  width: 100%;
+  justify-content: center;
 }
 
 .coming-soon-actions .btn-outline:hover {
@@ -250,5 +297,17 @@
 
   .coming-soon-button {
     width: 100%;
+  }
+
+  .coming-soon-banner-image {
+    border-radius: 10px;
+  }
+
+  .events-only-main {
+    padding-top: 10px;
+  }
+
+  .events-page-heading {
+    margin-bottom: 14px;
   }
 }
