@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import CustomCursor from '../components/CustomCursor/CustomCursor'
 import './ComingSoonPage.css'
@@ -11,6 +11,36 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 	const [displayPage, setDisplayPage] = useState(1)
 	const [isFlipping, setIsFlipping] = useState(false)
 	const [flipDirection, setFlipDirection] = useState('next')
+	const [isPdfLoaded, setIsPdfLoaded] = useState(false)
+	const pdfViewerSrc = useMemo(
+		() => `${pdfPath}#toolbar=0&navpanes=0&scrollbar=0&page=${displayPage}&view=FitH`,
+		[pdfPath, displayPage]
+	)
+
+	useEffect(() => {
+		if (!isEventsPage) {
+			return undefined
+		}
+
+		const preloadLink = document.createElement('link')
+		preloadLink.rel = 'preload'
+		preloadLink.as = 'fetch'
+		preloadLink.href = pdfPath
+		preloadLink.type = 'application/pdf'
+
+		const prefetchLink = document.createElement('link')
+		prefetchLink.rel = 'prefetch'
+		prefetchLink.href = pdfPath
+		prefetchLink.type = 'application/pdf'
+
+		document.head.appendChild(preloadLink)
+		document.head.appendChild(prefetchLink)
+
+		return () => {
+			document.head.removeChild(preloadLink)
+			document.head.removeChild(prefetchLink)
+		}
+	}, [isEventsPage, pdfPath])
 
 	const handleFlipPage = (direction) => {
 		if (isFlipping) {
@@ -24,6 +54,7 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 		const targetPage = direction === 'next' ? currentPage + 1 : currentPage - 1
 		setFlipDirection(direction)
 		setIsFlipping(true)
+		setIsPdfLoaded(false)
 
 		window.setTimeout(() => {
 			setDisplayPage(targetPage)
@@ -125,10 +156,18 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 						<div className="rulebook-book-shell">
 							<div className="rulebook-spine" aria-hidden="true" />
 							<div className={`rulebook-page-surface ${isFlipping ? `is-flipping ${flipDirection}` : ''}`}>
+								{!isPdfLoaded && (
+									<div className="rulebook-loading-state" role="status" aria-live="polite">
+										<div className="rulebook-loading-spinner" aria-hidden="true" />
+										<p>Loading rule book...</p>
+									</div>
+								)}
 								<iframe
 									title="Refresko 2026 Rule Book"
 									className="rulebook-frame"
-									src={`${pdfPath}#toolbar=0&navpanes=0&scrollbar=0&page=${displayPage}&view=FitH`}
+									src={pdfViewerSrc}
+									loading="eager"
+									onLoad={() => setIsPdfLoaded(true)}
 								/>
 								<div className="rulebook-page-shadow" aria-hidden="true" />
 							</div>
