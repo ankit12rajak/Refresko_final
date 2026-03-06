@@ -1,10 +1,39 @@
 import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import CustomCursor from '../components/CustomCursor/CustomCursor'
 import './ComingSoonPage.css'
 
 const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 	const isEventsPage = title?.toLowerCase() === 'events'
+	const pdfPath = useMemo(() => '/Refresko%202026%20Rule%20Book.pdf', [])
+	const [currentPage, setCurrentPage] = useState(1)
+	const [displayPage, setDisplayPage] = useState(1)
+	const [isFlipping, setIsFlipping] = useState(false)
+	const [flipDirection, setFlipDirection] = useState('next')
+
+	const handleFlipPage = (direction) => {
+		if (isFlipping) {
+			return
+		}
+
+		if (direction === 'prev' && currentPage <= 1) {
+			return
+		}
+
+		const targetPage = direction === 'next' ? currentPage + 1 : currentPage - 1
+		setFlipDirection(direction)
+		setIsFlipping(true)
+
+		window.setTimeout(() => {
+			setDisplayPage(targetPage)
+			setCurrentPage(targetPage)
+		}, 360)
+
+		window.setTimeout(() => {
+			setIsFlipping(false)
+		}, 760)
+	}
 
 	return (
 		<div className="coming-soon">
@@ -81,6 +110,39 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 					</motion.div>
 				)}
 
+				{isEventsPage && (
+					<motion.section
+						className="rulebook-section"
+						initial={{ opacity: 0, y: 24 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.8, delay: 0.35 }}
+					>
+						<div className="rulebook-header">
+							<h2 className="rulebook-title">Refresko 2026 Rule Book</h2>
+							
+						</div>
+
+						<div className="rulebook-book-shell">
+							<div className="rulebook-spine" aria-hidden="true" />
+							<div className={`rulebook-page-surface ${isFlipping ? `is-flipping ${flipDirection}` : ''}`}>
+								<iframe
+									title="Refresko 2026 Rule Book"
+									className="rulebook-frame"
+									src={`${pdfPath}#toolbar=0&navpanes=0&scrollbar=0&page=${displayPage}&view=FitH`}
+								/>
+								<div className="rulebook-page-shadow" aria-hidden="true" />
+							</div>
+						</div>
+
+						<div className="rulebook-controls">
+							
+							<a className="rulebook-download-btn interactive" href={pdfPath} download>
+								Download Rule Book
+							</a>
+						</div>
+					</motion.section>
+				)}
+
 				{!isEventsPage && (
 					<>
 						<motion.div
@@ -122,7 +184,7 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 				>
 					{isEventsPage && (
 						<a
-							className="btn-outline interactive"
+							className="btn-outline register-now-btn interactive"
 							href="https://forms.gle/R9icZUxEevYpWe6L8"
 							target="_blank"
 							rel="noopener noreferrer"
