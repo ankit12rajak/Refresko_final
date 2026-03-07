@@ -142,6 +142,25 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 				)}
 
 				{isEventsPage && (
+					<motion.div
+						className="events-top-register"
+						initial={{ opacity: 0, y: 18 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.8, delay: 0.3 }}
+					>
+						<a
+							className="btn-outline register-now-btn interactive"
+							href="https://forms.gle/R9icZUxEevYpWe6L8"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							REGISTER NOW
+							<span className="btn-arrow">→</span>
+						</a>
+					</motion.div>
+				)}
+
+				{isEventsPage && (
 					<motion.section
 						className="rulebook-section"
 						initial={{ opacity: 0, y: 24 }}
@@ -221,17 +240,6 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.8, delay: 0.5 }}
 				>
-					{isEventsPage && (
-						<a
-							className="btn-outline register-now-btn interactive"
-							href="https://forms.gle/R9icZUxEevYpWe6L8"
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							REGISTER NOW
-							<span className="btn-arrow">→</span>
-						</a>
-					)}
 					{!isEventsPage && (
 						<Link className="btn-outline interactive" to="/">
 							RETURN TO REFRESKO

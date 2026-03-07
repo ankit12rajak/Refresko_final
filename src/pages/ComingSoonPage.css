@@ -208,6 +208,13 @@
   max-width: 1120px;
 }
 
+.events-top-register {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 10px;
+}
+
 .rulebook-section {
   width: 100%;
   max-width: 1120px;
@@ -438,7 +445,8 @@
   box-shadow: 0 0 24px rgba(255, 0, 51, 0.3);
 }
 
-.coming-soon-actions .register-now-btn {
+.coming-soon-actions .register-now-btn,
+.events-top-register .register-now-btn {
   border-color: rgba(255, 176, 25, 0.92);
   background: linear-gradient(135deg, rgba(255, 190, 36, 0.96), rgba(255, 121, 26, 0.95));
   color: #130807;
@@ -447,19 +455,22 @@
   animation: registerNowPulse 2s ease-in-out infinite;
 }
 
-.coming-soon-actions .register-now-btn .btn-arrow {
+.coming-soon-actions .register-now-btn .btn-arrow,
+.events-top-register .register-now-btn .btn-arrow {
   color: #130807;
   font-size: 1rem;
   transition: transform 0.2s ease;
 }
 
-.coming-soon-actions .register-now-btn:hover {
+.coming-soon-actions .register-now-btn:hover,
+.events-top-register .register-now-btn:hover {
   border-color: rgba(255, 212, 122, 1);
   color: #090303;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.24) inset, 0 0 42px rgba(255, 141, 0, 0.7);
 }
 
-.coming-soon-actions .register-now-btn:hover .btn-arrow {
+.coming-soon-actions .register-now-btn:hover .btn-arrow,
+.events-top-register .register-now-btn:hover .btn-arrow {
   transform: translateX(3px);
 }
 

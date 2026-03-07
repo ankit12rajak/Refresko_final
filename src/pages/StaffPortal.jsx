@@ -78,12 +78,49 @@ const StaffPortal = () => {
     [transactions]
   )
 
-  const getStatusClassName = (statusValue) => {
+  const topAnalytics = useMemo(() => {
+    const paidStudentCodes = new Set(
+      paidTransactions
+        .map((item) => String(item?.student_code || '').trim().toUpperCase())
+        .filter(Boolean)
+    )
+
+    const pendingStudentCodes = new Set(
+      pendingList
+        .map((item) => String(item?.student_code || '').trim().toUpperCase())
+        .filter(Boolean)
+    )
+
+    // Pending list and paid list should be disjoint, but guard against overlap.
+    pendingStudentCodes.forEach((code) => {
+      if (paidStudentCodes.has(code)) {
+        pendingStudentCodes.delete(code)
+      }
+    })
+
+    const paidStudents = summary?.paid_count ?? summary?.submitted_payments ?? paidStudentCodes.size
+    const pendingStudents = summary?.pending_payment_students ?? pendingStudentCodes.size
+    const totalStudents = paidStudents + pendingStudents
+
+    return {
+      totalStudents,
+      paidStudents,
+      pendingStudents,
+    }
+  }, [paidTransactions, pendingList, summary])
+
+  const getPaymentLabelMeta = (statusValue) => {
     const normalized = String(statusValue || '').toLowerCase()
-    if (normalized === 'approved' || normalized === 'completed') return 'status-chip status-success'
-    if (normalized === 'pending') return 'status-chip status-pending'
-    if (normalized === 'declined' || normalized === 'rejected') return 'status-chip status-danger'
-    return 'status-chip'
+    if (normalized === 'approved' || normalized === 'completed') {
+      return { label: 'Paid', className: 'status-chip status-success' }
+    }
+    if (normalized === 'pending') {
+      return { label: 'Waiting for Approval', className: 'status-chip status-pending' }
+    }
+    if (normalized === 'declined' || normalized === 'rejected') {
+      return { label: 'Not Paid', className: 'status-chip status-danger' }
+    }
+    return { label: 'Not Paid', className: 'status-chip status-danger' }
   }
 
   const handleLogout = async () => {
@@ -145,16 +182,25 @@ const StaffPortal = () => {
           <>
             <div className="staff-grid">
               <div className="staff-card">
-                <h3>Paid / Submitted</h3>
-                <p className="staff-number">{summary?.submitted_payments ?? paidTransactions.length}</p>
+                <h3>Total Students</h3>
+                <p className="staff-number">{topAnalytics.totalStudents}</p>
               </div>
               <div className="staff-card">
-                <h3>Pending Payment</h3>
-                <p className="staff-number">{summary?.pending_payment_students ?? pendingList.length}</p>
+                <h3>Paid Students</h3>
+                <p className="staff-number">{topAnalytics.paidStudents}</p>
               </div>
               <div className="staff-card">
-                <h3>Pending List</h3>
-                <p className="staff-number">{pendingList.length}</p>
+                <h3>Pending Students</h3>
+                <p className="staff-number">{topAnalytics.pendingStudents}</p>
+              </div>
+            </div>
+
+            <div className="staff-card">
+              <h2>Payment Labels</h2>
+              <div className="staff-label-legend">
+                <span className="status-chip status-success">Paid</span>
+                <span className="status-chip status-pending">Waiting for Approval</span>
+                <span className="status-chip status-danger">Not Paid</span>
               </div>
             </div>
 
@@ -176,19 +222,21 @@ const StaffPortal = () => {
                       <tr>
                         <td colSpan={isCr ? 4 : 5} className="empty-row">No payment records found</td>
                       </tr>
-                    ) : transactions.map((row) => (
+                    ) : transactions.map((row) => {
+                      const paymentStatus = getPaymentLabelMeta(row.payment_approved || row.status)
+                      return (
                       <tr key={row.payment_id || `${row.student_code}-${row.transaction_id || row.created_at || ''}`}>
                         <td>{row.student_code}</td>
                         <td>{row.student_name}</td>
                         <td>{row.phone || '-'}</td>
                         {!isCr ? <td>₹{row.amount}</td> : null}
                         <td>
-                          <span className={getStatusClassName(row.payment_approved || row.status)}>
-                            {row.payment_approved || row.status || 'unknown'}
+                          <span className={paymentStatus.className}>
+                            {paymentStatus.label}
                           </span>
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>
@@ -205,12 +253,13 @@ const StaffPortal = () => {
                       <th>Mobile</th>
                       <th>Department</th>
                       <th>Year</th>
+                      <th>Payment Label</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pendingList.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="empty-row">No pending students</td>
+                        <td colSpan={6} className="empty-row">No pending students</td>
                       </tr>
                     ) : pendingList.map((row) => (
                       <tr key={`${row.student_code}-${row.name}`}>
@@ -219,6 +268,9 @@ const StaffPortal = () => {
                         <td>{row.phone || '-'}</td>
                         <td>{row.department}</td>
                         <td>{row.year}</td>
+                        <td>
+                          <span className="status-chip status-danger">Not Paid</span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

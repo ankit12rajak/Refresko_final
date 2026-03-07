@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import QRCode from 'qrcode'
@@ -56,6 +56,7 @@ const SKFDashboard = () => {
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false)
   const [googleWalletLoading, setGoogleWalletLoading] = useState(false)
   const [googleWalletError, setGoogleWalletError] = useState('')
+  const receiptCardRef = useRef(null)
 
   const activePaymentOption = useMemo(
     () => getActivePaymentOption(paymentConfig),
@@ -104,7 +105,10 @@ const SKFDashboard = () => {
               payment_approved: paymentApproved,
               payment_completion: paymentCompletion,
               gate_pass_created: gatePassCreated,
-              amount: configuredPaymentAmount
+              amount: Number(data.latest_payment_amount) || configuredPaymentAmount,
+              utr_no: data.latest_payment_utr_no || '',
+              transaction_id: data.latest_payment_transaction_id || '',
+              date: data.latest_payment_date || ''
             }
           }
         } catch (apiError) {
@@ -164,6 +168,13 @@ const SKFDashboard = () => {
         gate_pass_created: dbPaymentStatus?.gate_pass_created !== undefined
           ? parseBoolish(dbPaymentStatus.gate_pass_created)
           : parseBoolish(latest?.gate_pass_created)
+      }
+
+      if (!finalPaymentData.utrNo && finalPaymentData.utr_no) {
+        finalPaymentData.utrNo = finalPaymentData.utr_no
+      }
+      if (!finalPaymentData.transactionId && finalPaymentData.transaction_id) {
+        finalPaymentData.transactionId = finalPaymentData.transaction_id
       }
 
       setLatestPayment(finalPaymentData)
@@ -304,6 +315,7 @@ const SKFDashboard = () => {
   const payment = latestPayment
     ? {
         transactionId: latestPayment.transactionId || latestPayment.utrNo || 'N/A',
+        utrNo: latestPayment.utrNo || latestPayment.utr_no || 'N/A',
         amount: `₹${Number(latestPayment.amount || configuredPaymentAmount)}`,
         paymentDate: latestPayment.date || new Date().toISOString(),
         paymentMethod: latestPayment.paymentMethod || 'UPI',
@@ -318,14 +330,62 @@ const SKFDashboard = () => {
       }
     : null
 
-  const gatePassPayload = useMemo(() => JSON.stringify({
-    Student_Code: student.studentId || '',
-    Name: student.name || '',
-    Phone: student.phone || '',
-    Email: student.email || '',
-    Department: student.department || '',
-    Year: student.year || ''
-  }), [student])
+  const handleDownloadReceiptJpg = async () => {
+    if (!receiptCardRef.current || !payment) return
+
+    try {
+      const { default: html2canvas } = await import('html2canvas')
+      const canvas = await html2canvas(receiptCardRef.current, {
+        backgroundColor: '#0b0f18',
+        scale: 2,
+        useCORS: true,
+      })
+
+      const imageUrl = canvas.toDataURL('image/jpeg', 0.95)
+      const safeStudentCode = String(student.studentId || 'student').replace(/[^A-Za-z0-9_-]/g, '_')
+      const link = document.createElement('a')
+      link.href = imageUrl
+      link.download = `receipt_${safeStudentCode}.jpg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error('Failed to download receipt JPG:', error)
+    }
+  }
+
+  const gatePassPayload = useMemo(() => {
+    const normalizedCode = String(student.studentId || '').trim().toUpperCase()
+    const normalizedName = String(student.name || '').trim().toLowerCase()
+    const normalizedPhone = String(student.phone || '').trim()
+    const normalizedEmail = String(student.email || '').trim().toLowerCase()
+    const normalizedDepartment = String(student.department || '').trim().toLowerCase()
+    const normalizedYear = String(student.year || '').trim().toLowerCase()
+    const normalizedPassCode = `SKF-PASS-${normalizedCode}-REFRESKO2026`
+
+    const payload = {
+      ver: '2',
+      type: 'SKF_GATE_PASS',
+      Student_Code_Hash: md5(normalizedCode),
+      Details_Hash: {
+        student_code: md5(normalizedCode),
+        pass_code: md5(normalizedPassCode),
+        name: md5(normalizedName),
+        phone: md5(normalizedPhone),
+        email: md5(normalizedEmail),
+        department: md5(normalizedDepartment),
+        year: md5(normalizedYear),
+      },
+      Generated_At: new Date().toISOString(),
+    }
+
+    return JSON.stringify(payload)
+  }, [student])
+
+  const gatePassPayloadHash = useMemo(
+    () => md5(gatePassPayload),
+    [gatePassPayload]
+  )
 
   useEffect(() => {
     let isActive = true
@@ -708,7 +768,7 @@ const SKFDashboard = () => {
                             </div>
                           )}
                         </div>
-                        <p className="qr-hint">Tap to view full pass</p>
+                        <p className="qr-hint">Tap to view full pass • hashed payload</p>
                       </div>
 
                       <div className="preview-info-section">
@@ -727,6 +787,10 @@ const SKFDashboard = () => {
                         <div className="preview-info-row">
                           <span className="info-label">Status</span>
                           <span className="info-value status-active">✓ VALID</span>
+                        </div>
+                        <div className="preview-info-row">
+                          <span className="info-label">QR Hash</span>
+                          <span className="info-value code">{gatePassPayloadHash.slice(0, 12)}...</span>
                         </div>
                       </div>
                     </div>
@@ -774,6 +838,10 @@ const SKFDashboard = () => {
                       </div>
                     </div>
                     <span className="pass-type">SKF STUDENT PASS</span>
+                    <div className="pass-meta-strip">
+                      <span className="pass-meta-chip">ENTRY ACCESS</span>
+                      <span className="pass-meta-chip">SECURE QR</span>
+                    </div>
                   </div>
 
                   <div className="qr-container">
@@ -811,10 +879,15 @@ const SKFDashboard = () => {
                       <span className="pass-label">Valid For</span>
                       <span className="pass-value">All Days - March 27th & 28th, 2026</span>
                     </div>
+                    <div className="pass-detail-row">
+                      <span className="pass-label">QR Payload Hash</span>
+                      <span className="pass-value code">{gatePassPayloadHash}</span>
+                    </div>
                   </div>
 
                   <div className="pass-footer">
                     <span className="pass-status valid">✓ VALID PASS</span>
+                    <span className="pass-security-chip">HASHED DETAILS</span>
                   </div>
 
                   {/* Google Wallet Button */}
@@ -886,7 +959,7 @@ const SKFDashboard = () => {
                 </div>
 
                 {isPaymentApproved && payment ? (
-                <div className="receipt-card">
+                <div className="receipt-card" ref={receiptCardRef}>
                   <div className="receipt-header">
                     <div className="receipt-logo">
                       <div className="logo-icons-row">
@@ -909,7 +982,10 @@ const SKFDashboard = () => {
                   <div className="receipt-body">
                     <div className="receipt-title">
                       <h2>Payment Receipt</h2>
-                      <span className="receipt-number">#{payment.transactionId}</span>
+                      <div className="receipt-title-right">
+                        <span className="receipt-number">#{payment.transactionId}</span>
+                        <span className="receipt-meta-chip">UTR #{payment.utrNo || 'N/A'}</span>
+                      </div>
                     </div>
 
                     <div className="receipt-info">
@@ -937,6 +1013,12 @@ const SKFDashboard = () => {
                         <span className="info-label">Payment Method</span>
                         <span className="info-value">{payment.paymentMethod}</span>
                       </div>
+                      <div className="info-group info-group-utr">
+                        <span className="info-label">UTR No</span>
+                        <span className={`info-value info-value-utr ${(payment.utrNo || 'N/A') === 'N/A' ? 'is-empty' : ''}`}>
+                          #{payment.utrNo || 'N/A'}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="receipt-breakdown">
@@ -958,14 +1040,12 @@ const SKFDashboard = () => {
                         <span>PAID</span>
                       </div>
                     </div>
-                    {/* <div className="receipt-actions">
-                      <button className="receipt-btn">
-                        <span>📥 Download Receipt</span>
+                    <div className="receipt-actions">
+                      <button className="receipt-btn receipt-btn-download" onClick={handleDownloadReceiptJpg}>
+                        <span className="receipt-btn-icon">[JPG]</span>
+                        <span>Download Receipt</span>
                       </button>
-                      <button className="receipt-btn secondary">
-                        <span>📧 Email Receipt</span>
-                      </button>
-                    </div> */}
+                    </div>
                   </div>
 
                   <div className="receipt-note">

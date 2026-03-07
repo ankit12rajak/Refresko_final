@@ -131,9 +131,14 @@ function students_get_one(): void
     $student['food_included'] = boolish_to_int($student['food_included'] ?? 0);
     $student['payment_approved'] = normalize_payment_approved_state($student['payment_approved'] ?? 'pending');
 
-    $latestPaymentStmt = $pdo->prepare('SELECT status, payment_approved
+    $latestPaymentStmt = $pdo->prepare('SELECT status,
+                                               payment_approved,
+                                               utr_no,
+                                               transaction_id,
+                                               amount,
+                                               created_at
                                         FROM payments
-                                        WHERE student_code = :student_code
+                                        WHERE UPPER(TRIM(student_code)) = :student_code
                                         ORDER BY id DESC
                                         LIMIT 1');
     $latestPaymentStmt->execute([':student_code' => $studentCode]);
@@ -148,10 +153,18 @@ function students_get_one(): void
         $student['payment_completion'] = $isPaymentSubmitted ? 1 : 0;
         $student['gate_pass_created'] = $isGatePassReady ? 1 : 0;
         $student['payment_approved'] = $approvedState;
+        $student['latest_payment_utr_no'] = trim((string)($latestPayment['utr_no'] ?? ''));
+        $student['latest_payment_transaction_id'] = trim((string)($latestPayment['transaction_id'] ?? ''));
+        $student['latest_payment_amount'] = (float)($latestPayment['amount'] ?? 0);
+        $student['latest_payment_date'] = (string)($latestPayment['created_at'] ?? '');
     } else {
         $student['payment_completion'] = 0;
         $student['gate_pass_created'] = 0;
         $student['payment_approved'] = 'pending';
+        $student['latest_payment_utr_no'] = '';
+        $student['latest_payment_transaction_id'] = '';
+        $student['latest_payment_amount'] = 0;
+        $student['latest_payment_date'] = '';
     }
 
     json_response(['success' => true, 'student' => $student]);

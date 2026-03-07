@@ -86,6 +86,26 @@ function extract_bearer_token(): string
     return '';
 }
 
+function resolve_student_code_from_hash(string $hash): string
+{
+    $normalizedHash = strtolower(trim($hash));
+    if ($normalizedHash === '' || preg_match('/^[a-f0-9]{32}$/', $normalizedHash) !== 1) {
+        return '';
+    }
+
+    try {
+        $pdo = db();
+        $stmt = $pdo->prepare('SELECT student_code FROM student_details WHERE md5(upper(trim(student_code))) = ? LIMIT 1');
+        $stmt->execute([$normalizedHash]);
+        $row = $stmt->fetch();
+        $candidate = strtoupper(trim((string)($row['student_code'] ?? '')));
+        return $candidate;
+    } catch (Throwable $error) {
+        error_log('staff hash lookup error: ' . $error->getMessage());
+        return '';
+    }
+}
+
 function parse_staff_student_code(?string $studentCode, ?string $qrData): string
 {
     $code = strtoupper(trim((string)$studentCode));
@@ -112,6 +132,27 @@ function parse_staff_student_code(?string $studentCode, ?string $qrData): string
                 return $normalized;
             }
         }
+
+        $hashCandidates = [
+            $decoded['Student_Code_Hash'] ?? null,
+            $decoded['student_code_hash'] ?? null,
+            $decoded['Details_Hash']['student_code'] ?? null,
+            $decoded['details_hash']['student_code'] ?? null,
+            $decoded['Hashes']['student_code'] ?? null,
+            $decoded['hashes']['student_code'] ?? null,
+        ];
+
+        foreach ($hashCandidates as $hashCandidate) {
+            $resolved = resolve_student_code_from_hash((string)$hashCandidate);
+            if ($resolved !== '') {
+                return $resolved;
+            }
+        }
+    }
+
+    $resolvedFromRaw = resolve_student_code_from_hash($rawQr);
+    if ($resolvedFromRaw !== '') {
+        return $resolvedFromRaw;
     }
 
     return strtoupper($rawQr);

@@ -699,6 +699,22 @@
   background: rgba(255, 71, 87, 0.05);
 }
 
+.analytics-table tbody tr.pending-row {
+  background: rgba(255, 170, 0, 0.03);
+}
+
+.analytics-table tbody tr.pending-row:hover {
+  background: rgba(255, 170, 0, 0.07);
+}
+
+.analytics-table tbody tr.declined-row {
+  background: rgba(255, 71, 87, 0.04);
+}
+
+.analytics-table tbody tr.declined-row:hover {
+  background: rgba(255, 71, 87, 0.08);
+}
+
 .analytics-table tfoot {
   background: rgba(255, 0, 51, 0.05);
   border-top: 2px solid var(--color-primary);
@@ -830,6 +846,18 @@
   background: rgba(255, 71, 87, 0.15);
   color: #ff4757;
   border: 1px solid #ff4757;
+}
+
+.status-badge.pending {
+  background: rgba(255, 170, 0, 0.15);
+  color: #ffaa00;
+  border: 1px solid #ffaa00;
+}
+
+.status-badge.declined {
+  background: rgba(255, 71, 87, 0.18);
+  color: #ff5d6b;
+  border: 1px solid #ff5d6b;
 }
 
 .status-badge svg {

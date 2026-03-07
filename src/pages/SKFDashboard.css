@@ -851,8 +851,9 @@
   border: 1px solid rgba(100, 255, 150, 0.3);
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(100, 255, 150, 0.15);
-  border-radius: 12px;
+  border-radius: 16px;
   position: relative;
+  isolation: isolate;
 }
 
 .gatepass-card::before {
@@ -866,6 +867,17 @@
   background: radial-gradient(circle, rgba(100, 255, 150, 0.1), transparent 70%);
   filter: blur(80px);
   pointer-events: none;
+}
+
+.gatepass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 35%, transparent 65%, rgba(100, 255, 150, 0.1));
+  mix-blend-mode: screen;
+  opacity: 0.65;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .gatepass-header {
@@ -1064,7 +1076,9 @@
   padding: 20px 30px;
   background: rgba(100, 255, 150, 0.05);
   border-top: 1px solid rgba(100, 255, 150, 0.1);
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   position: relative;
   z-index: 2;
 }
@@ -1085,6 +1099,19 @@
   color: #64ff96;
   border: 1px solid rgba(100, 255, 150, 0.4);
   box-shadow: 0 0 15px rgba(100, 255, 150, 0.2);
+}
+
+.pass-security-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: #b8ffcf;
+  border: 1px solid rgba(184, 255, 207, 0.4);
+  background: rgba(100, 255, 150, 0.12);
 }
 
 .pass-detail-row {
@@ -1209,10 +1236,23 @@
 .receipt-card {
   max-width: 550px;
   margin: 0 auto;
-  background: rgba(10, 10, 10, 0.9);
-  border: 1px solid rgba(255, 0, 51, 0.2);
+  background: linear-gradient(160deg, rgba(14, 14, 18, 0.96), rgba(8, 8, 12, 0.92));
+  border: 1px solid rgba(255, 0, 51, 0.28);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(255, 0, 51, 0.15);
+  box-shadow: 0 24px 70px rgba(255, 0, 51, 0.2);
+  position: relative;
+}
+
+.receipt-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 0, 51, 0.05), rgba(255, 0, 51, 0.9), rgba(255, 0, 51, 0.05));
+  z-index: 2;
 }
 
 .receipt-header {
@@ -1277,13 +1317,22 @@
   margin-bottom: 30px;
 }
 
-.info-group {
+.receipt-info .info-group {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.015);
 }
 
-.info-label {
+.receipt-info .info-group-utr {
+  border-color: rgba(255, 0, 51, 0.35);
+  background: rgba(255, 0, 51, 0.08);
+}
+
+.receipt-info .info-label {
   font-family: var(--font-body);
   font-size: 0.75rem;
   color: var(--color-text-muted);
@@ -1291,10 +1340,22 @@
   letter-spacing: 0.1em;
 }
 
-.info-value {
+.receipt-info .info-value {
   font-family: var(--font-body);
   font-size: 0.95rem;
   color: var(--color-text);
+}
+
+.info-value-utr {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #ff5f7f;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.info-value-utr.is-empty {
+  color: #a5a5a5;
 }
 
 .receipt-breakdown {
@@ -1436,6 +1497,39 @@
   color: var(--color-text);
 }
 
+.receipt-btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 65, 95, 0.65);
+  padding: 11px 18px;
+  background: linear-gradient(135deg, #ff1647, #c1002c);
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 10px 24px rgba(255, 0, 51, 0.28);
+}
+
+.receipt-btn-download:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ff2a58, #d10031);
+  box-shadow: 0 14px 30px rgba(255, 0, 51, 0.35);
+}
+
+.receipt-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+}
+
 .receipt-note {
   padding: 20px 30px;
   text-align: center;
@@ -1447,6 +1541,241 @@
   font-size: 0.8rem;
   color: var(--color-text-muted);
   margin: 5px 0;
+}
+
+/* Student Dashboard Global Refresh */
+.dashboard-layout {
+  background:
+    radial-gradient(circle at 86% 8%, rgba(255, 0, 51, 0.12), transparent 36%),
+    radial-gradient(circle at 14% 92%, rgba(255, 0, 51, 0.08), transparent 34%);
+}
+
+.dashboard-sidebar {
+  background: linear-gradient(180deg, rgba(13, 13, 16, 0.98), rgba(8, 8, 11, 0.96));
+  border-right-color: rgba(255, 0, 51, 0.3);
+  box-shadow: 14px 0 34px rgba(0, 0, 0, 0.36);
+}
+
+.sidebar-header {
+  position: relative;
+}
+
+.sidebar-header::after {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 51, 0.45), transparent);
+}
+
+.sidebar-logo {
+  letter-spacing: 0.14em;
+}
+
+.sidebar-nav {
+  padding: 14px 12px;
+}
+
+.nav-item {
+  border-radius: 12px;
+  margin: 4px 8px;
+  padding: 13px 16px;
+}
+
+.nav-item::before {
+  left: 8px;
+  width: 4px;
+  border-radius: 6px;
+}
+
+.nav-item:hover {
+  background: rgba(255, 0, 51, 0.09);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(255, 0, 51, 0.22), rgba(255, 0, 51, 0.06));
+  border: 1px solid rgba(255, 0, 51, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), 0 8px 20px rgba(255, 0, 51, 0.2);
+}
+
+.logout-btn {
+  border-radius: 12px;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dashboard-main {
+  padding-top: 28px;
+}
+
+.dashboard-section {
+  background: rgba(7, 7, 10, 0.36);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.28);
+}
+
+.section-header {
+  margin-bottom: 30px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.section-title {
+  letter-spacing: 0.03em;
+}
+
+.quick-stats {
+  gap: 16px;
+}
+
+.stat-card {
+  border-radius: 14px;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card:hover {
+  box-shadow: 0 18px 36px rgba(255, 0, 51, 0.2);
+}
+
+.student-card,
+.action-card,
+.gate-pass-preview-card,
+.gatepass-card,
+.receipt-card,
+.pass-instructions {
+  border-radius: 16px;
+}
+
+.student-card,
+.action-card {
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.24);
+}
+
+.card-header h2,
+.action-card h3 {
+  letter-spacing: 0.02em;
+}
+
+.detail-row {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.action-btn,
+.preview-view-btn,
+.receipt-btn,
+.google-wallet-btn {
+  border-radius: 12px;
+}
+
+/* Gate Pass + Receipt Visual Upgrade */
+.gatepass-section .gatepass-card {
+  box-shadow: 0 26px 70px rgba(70, 255, 160, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.gatepass-section .gatepass-header {
+  background: linear-gradient(145deg, rgba(100, 255, 150, 0.18), rgba(100, 255, 150, 0.02));
+}
+
+.pass-meta-strip {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pass-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 255, 174, 0.45);
+  background: rgba(110, 255, 174, 0.12);
+  color: #b5ffd0;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.gatepass-section .qr-code {
+  border: 1px solid rgba(100, 255, 150, 0.25);
+}
+
+.gatepass-section .pass-details {
+  background: linear-gradient(180deg, rgba(100, 255, 150, 0.045), rgba(100, 255, 150, 0.02));
+}
+
+.gatepass-section .pass-detail-row {
+  border-bottom: 1px solid rgba(130, 255, 186, 0.14);
+  transition: background 0.22s ease;
+}
+
+.gatepass-section .pass-detail-row:hover {
+  background: rgba(100, 255, 150, 0.06);
+}
+
+.gatepass-section .pass-value {
+  max-width: 62%;
+  text-align: right;
+}
+
+.gatepass-section .pass-value.code {
+  border-radius: 6px;
+}
+
+.receipt-section .receipt-card {
+  box-shadow: 0 28px 80px rgba(255, 0, 51, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.receipt-title-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.receipt-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 82, 121, 0.5);
+  background: rgba(255, 0, 51, 0.12);
+  color: #ff8aa9;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.receipt-section .receipt-info {
+  gap: 14px;
+}
+
+.receipt-section .receipt-info .info-group {
+  backdrop-filter: blur(5px);
+}
+
+.receipt-section .receipt-breakdown {
+  border-radius: 12px;
+  border-color: rgba(255, 0, 51, 0.2);
+}
+
+.receipt-section .receipt-description {
+  border-radius: 10px;
+}
+
+.receipt-section .receipt-note {
+  background: rgba(255, 255, 255, 0.015);
 }
 
 /* Responsive Styles */
@@ -1540,6 +1869,11 @@ body {
     margin-left: 60px;
     padding: 15px;
   }
+
+  .dashboard-section {
+    padding: 16px;
+    border-radius: 14px;
+  }
   
   .section-title {
     font-size: 1.6rem;
@@ -1559,7 +1893,7 @@ body {
   .detail-row {
     flex-direction: row;
     justify-content: space-between;
-    padding: 10px 0;
+    padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   }
   
@@ -1631,6 +1965,28 @@ body {
   .preview-view-btn {
     font-size: 0.9rem;
     padding: 12px 16px;
+  }
+
+  .pass-meta-strip {
+    justify-content: center;
+  }
+
+  .gatepass-section .pass-value {
+    max-width: 58%;
+    font-size: 0.85rem;
+  }
+
+  .receipt-title {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .receipt-title-right {
+    justify-content: flex-start;
+  }
+
+  .receipt-meta-chip {
+    font-size: 0.68rem;
   }
   
   .receipt-info {

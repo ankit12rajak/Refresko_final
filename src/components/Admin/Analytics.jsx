@@ -28,18 +28,134 @@ const normalizePaymentApproved = (paymentApproved, status) => {
 const normalizeStudentRecord = (student) => ({
   student_code: normalizeText(student?.student_code || student?.studentCode || student?.code || student?.student_id || student?.studentId),
   student_name: normalizeText(student?.student_name || student?.studentName || student?.name || student?.full_name, 'Unknown'),
-  department: normalizeText(student?.department, 'Not specified'),
-  year: normalizeText(student?.year || student?.academic_year, 'Not specified'),
+  department: normalizeText(student?.department),
+  year: normalizeText(student?.year || student?.academic_year),
   email: normalizeText(student?.email),
   phone: normalizeText(student?.phone || student?.mobile)
 })
+
+const normalizeCodeForSearch = (value) => normalizeText(value).toUpperCase()
+const compactCodeForSearch = (value) => normalizeCodeForSearch(value).replace(/[^A-Z0-9]/g, '')
+
+const extractStudentCodeParts = (studentCode) => {
+  const raw = normalizeText(studentCode)
+  if (!raw) {
+    return { admissionYear: 0, department: '' }
+  }
+
+  const parts = raw.split(/[\\/\-_\s]+/).filter(Boolean)
+  let admissionYear = 0
+  let department = ''
+
+  for (let index = 0; index < parts.length; index += 1) {
+    const token = normalizeText(parts[index])
+    if (!admissionYear && /^(19|20)\d{2}$/.test(token)) {
+      admissionYear = Number(token)
+      const nextToken = normalizeText(parts[index + 1])
+      if (nextToken && /^[A-Za-z][A-Za-z0-9\- ]*$/.test(nextToken)) {
+        department = nextToken
+      }
+      break
+    }
+  }
+
+  if (!admissionYear) {
+    const longYearMatch = raw.match(/((?:19|20)\d{2})/)
+    if (longYearMatch) {
+      const candidate = Number(longYearMatch[1])
+      const maxReasonable = new Date().getFullYear() + 1
+      if (candidate >= 1990 && candidate <= maxReasonable) {
+        admissionYear = candidate
+      }
+    }
+  }
+
+  if (!admissionYear) {
+    const shortYearMatch = raw.match(/^\D*(\d{2})[A-Za-z]/)
+    if (shortYearMatch) {
+      const yy = Number(shortYearMatch[1])
+      const currentYear = new Date().getFullYear()
+      let candidate = 2000 + yy
+      if (candidate > currentYear + 1) {
+        candidate -= 100
+      }
+      if (candidate >= 1990 && candidate <= currentYear + 1) {
+        admissionYear = candidate
+      }
+    }
+  }
+
+  if (!department) {
+    const deptAfterYear = raw.match(/(?:19|20)\d{2}\s*[-_/]?\s*([A-Za-z]{2,12})/)
+    const deptAfterShortYear = raw.match(/^\D*\d{2}\s*[-_/]?\s*([A-Za-z]{2,12})/)
+    if (deptAfterYear) {
+      department = deptAfterYear[1]
+    } else if (deptAfterShortYear) {
+      department = deptAfterShortYear[1]
+    }
+  }
+
+  if (!department) {
+    const candidate = parts.find((token) => /^[A-Za-z]{2,10}$/.test(token) && !/^(19|20)\d{2}$/.test(token))
+    department = candidate ? normalizeText(candidate) : ''
+  }
+
+  return { admissionYear, department }
+}
+
+const inferYearLabelFromStudentCode = (studentCode, referenceYear = new Date().getFullYear()) => {
+  const { admissionYear } = extractStudentCodeParts(studentCode)
+  if (!admissionYear) return ''
+
+  const delta = referenceYear - admissionYear
+  const yearNumber = delta <= 0 ? 1 : Math.min(6, delta)
+  if (yearNumber === 1) return '1st Year'
+  if (yearNumber === 2) return '2nd Year'
+  if (yearNumber === 3) return '3rd Year'
+  return `${yearNumber}th Year`
+}
+
+const inferAdmissionYearFromStudentCode = (studentCode) => {
+  const { admissionYear } = extractStudentCodeParts(studentCode)
+  return admissionYear || 0
+}
+
+const enrichStudentRecord = (student) => {
+  const normalized = normalizeStudentRecord(student)
+  const inferredYear = inferYearLabelFromStudentCode(normalized.student_code)
+  const inferredAdmissionYear = inferAdmissionYearFromStudentCode(normalized.student_code)
+  const inferredDepartment = extractStudentCodeParts(normalized.student_code).department
+
+  return {
+    ...normalized,
+    department: normalizeText(normalized.department, inferredDepartment || 'Not specified'),
+    year: normalizeText(normalized.year, inferredYear || 'Not specified'),
+    inferred_year: inferredYear,
+    admission_year: inferredAdmissionYear
+  }
+}
+
+const enrichPaymentRecord = (payment) => {
+  const normalized = normalizePaymentRecord(payment)
+  const inferredYear = inferYearLabelFromStudentCode(normalized.student_code)
+  const inferredAdmissionYear = inferAdmissionYearFromStudentCode(normalized.student_code)
+  const inferredDepartment = extractStudentCodeParts(normalized.student_code).department
+
+  return {
+    ...normalized,
+    department: normalizeText(normalized.department, inferredDepartment || 'Not specified'),
+    year: normalizeText(normalized.year, inferredYear || 'Not specified'),
+    inferred_year: inferredYear,
+    admission_year: inferredAdmissionYear
+  }
+}
 
 const normalizePaymentRecord = (payment) => ({
   payment_id: normalizeText(payment?.payment_id || payment?.paymentId || payment?.id),
   student_code: normalizeText(payment?.student_code || payment?.studentCode || payment?.student_id || payment?.studentId),
   student_name: normalizeText(payment?.student_name || payment?.studentName || payment?.name, 'Unknown'),
-  department: normalizeText(payment?.department, 'Not specified'),
-  year: normalizeText(payment?.year || payment?.academic_year, 'Not specified'),
+  department: normalizeText(payment?.department),
+  year: normalizeText(payment?.year || payment?.academic_year),
   amount: Number(payment?.amount) || 0,
   payment_approved: normalizePaymentApproved(payment?.payment_approved || payment?.paymentApproved, payment?.status),
   status: normalizeText(payment?.status, 'pending').toLowerCase(),
@@ -94,6 +210,36 @@ const Analytics = () => {
     return allPayments
   }
 
+  const fetchAllCpanelStudents = async () => {
+    if (!cpanelApi.isConfigured()) return []
+
+    const allStudents = []
+    let offset = 0
+    let pageCount = 0
+    const maxPages = 20
+
+    while (pageCount < maxPages) {
+      const response = await cpanelApi.listStudents({ status: 'all', limit: CPANEL_BATCH_SIZE, offset })
+      const chunk = Array.isArray(response?.students) ? response.students : []
+
+      allStudents.push(...chunk)
+      pageCount += 1
+
+      const total = Number(response?.total)
+      if (Number.isFinite(total) && allStudents.length >= total) {
+        break
+      }
+
+      if (chunk.length < CPANEL_BATCH_SIZE || response?.has_more !== true) {
+        break
+      }
+
+      offset += chunk.length
+    }
+
+    return allStudents
+  }
+
   // Fetch data from database
   const fetchData = async () => {
     setLoading(true)
@@ -103,28 +249,19 @@ const Analytics = () => {
       let studentsData = []
       let paymentsData = []
 
-      // Use cPanel API to fetch all data
+      // Use cPanel API to fetch all data using student_details as source of truth (staff portal pattern)
       if (cpanelApi.isConfigured()) {
         try {
+          const studentsFromApi = await fetchAllCpanelStudents()
           const paymentsFromApi = await fetchAllCpanelPayments()
+
+          studentsData = studentsFromApi
+            .map(enrichStudentRecord)
+            .filter((student) => student.student_code)
+
           paymentsData = paymentsFromApi
-            .map(normalizePaymentRecord)
+            .map(enrichPaymentRecord)
             .filter((payment) => payment.student_code)
-
-          const studentMap = new Map()
-          paymentsData.forEach((payment) => {
-            if (!payment.student_code) return
-
-            studentMap.set(payment.student_code, {
-              student_code: payment.student_code,
-              student_name: payment.student_name || 'Unknown',
-              department: payment.department || 'Not specified',
-              year: payment.year || 'Not specified',
-              email: payment.email || '',
-              phone: ''
-            })
-          })
-          studentsData = Array.from(studentMap.values())
         } catch (apiError) {
           console.warn('cPanel API failed:', apiError)
         }
@@ -140,13 +277,13 @@ const Analytics = () => {
           studentMap.set(payment.student_code, {
             student_code: payment.student_code,
             student_name: payment.student_name || 'Unknown',
-            department: payment.department || 'Not specified',
-            year: payment.year || 'Not specified',
+            department: payment.department || '',
+            year: payment.year || '',
             email: '',
             phone: ''
           })
         })
-        studentsData = Array.from(studentMap.values())
+        studentsData = Array.from(studentMap.values()).map(enrichStudentRecord)
       }
 
       setStudents(studentsData)
@@ -169,13 +306,27 @@ const Analytics = () => {
   const departments = ['all', ...new Set(students.map(s => s.department).filter(Boolean))]
   const years = ['all', ...new Set(students.map(s => s.year).filter(Boolean))]
 
+  const searchTerm = normalizeCodeForSearch(searchQuery)
+  const compactSearchTerm = compactCodeForSearch(searchQuery)
+
   // Filter students based on selected filters
   const filteredStudents = students.filter(student => {
     const matchesDept = filterDepartment === 'all' || student.department === filterDepartment
     const matchesYear = filterYear === 'all' || student.year === filterYear
-    const matchesSearch = searchQuery === '' || 
-      student.student_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.student_code?.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const normalizedStudentCode = normalizeCodeForSearch(student.student_code)
+    const compactStudentCode = compactCodeForSearch(student.student_code)
+    const normalizedName = normalizeCodeForSearch(student.student_name)
+    const normalizedDepartment = normalizeCodeForSearch(student.department)
+    const normalizedYear = normalizeCodeForSearch(student.year)
+
+    const matchesSearch = searchTerm === ''
+      || normalizedStudentCode.includes(searchTerm)
+      || normalizedStudentCode.replace(/\\/g, '/').includes(searchTerm.replace(/\\/g, '/'))
+      || normalizedName.includes(searchTerm)
+      || normalizedDepartment.includes(searchTerm)
+      || normalizedYear.includes(searchTerm)
+      || (compactSearchTerm !== '' && compactStudentCode.includes(compactSearchTerm))
     
     return matchesDept && matchesYear && matchesSearch
   })
@@ -187,28 +338,42 @@ const Analytics = () => {
   })
 
   const latestPaymentByStudent = sortedPayments.reduce((accumulator, payment) => {
-    if (!payment.student_code) return accumulator
-    if (!accumulator.has(payment.student_code)) {
-      accumulator.set(payment.student_code, payment)
+    const normalizedCode = normalizeText(payment.student_code).toUpperCase()
+    if (!normalizedCode) return accumulator
+    if (!accumulator.has(normalizedCode)) {
+      accumulator.set(normalizedCode, payment)
     }
     return accumulator
   }, new Map())
 
-  const paidStudentCodes = new Set(
-    Array.from(latestPaymentByStudent.values())
-      .filter((payment) => payment.payment_approved === 'approved')
-      .map((payment) => payment.student_code)
-  )
+  const getStudentPaymentState = (studentCode) => {
+    const normalizedCode = normalizeText(studentCode).toUpperCase()
+    if (!normalizedCode) return 'not_paid'
 
-  const paidStudents = filteredStudents.filter(s => paidStudentCodes.has(s.student_code))
-  const unpaidStudents = filteredStudents.filter(s => !paidStudentCodes.has(s.student_code))
+    const latestPayment = latestPaymentByStudent.get(normalizedCode)
+    if (!latestPayment) return 'not_paid'
+    if (latestPayment.payment_approved === 'approved') return 'paid'
+    return 'waiting_approval'
+  }
+
+  const getPaymentStatusLabel = (state) => {
+    if (state === 'paid') return 'Paid'
+    if (state === 'waiting_approval') return 'Waiting for Approval'
+    return 'Not Paid'
+  }
+
+  const paidStudents = filteredStudents.filter((student) => getStudentPaymentState(student.student_code) === 'paid')
+  const waitingStudents = filteredStudents.filter((student) => getStudentPaymentState(student.student_code) === 'waiting_approval')
+  const notPaidStudents = filteredStudents.filter((student) => getStudentPaymentState(student.student_code) === 'not_paid')
 
   // Filter by payment status
   let displayStudents = filteredStudents
   if (filterPaymentStatus === 'paid') {
     displayStudents = paidStudents
-  } else if (filterPaymentStatus === 'unpaid') {
-    displayStudents = unpaidStudents
+  } else if (filterPaymentStatus === 'waiting_approval') {
+    displayStudents = waitingStudents
+  } else if (filterPaymentStatus === 'not_paid') {
+    displayStudents = notPaidStudents
   }
 
   // Pagination logic
@@ -222,14 +387,22 @@ const Analytics = () => {
     setCurrentPage(1)
   }, [filterDepartment, filterYear, filterPaymentStatus, searchQuery])
 
-  const approvedRevenueByStudent = Array.from(latestPaymentByStudent.values()).reduce((total, payment) => {
-    if (payment.payment_approved !== 'approved') return total
-    return total + (Number(payment.amount) || 0)
+  const approvedRevenueByStudent = filteredStudents.reduce((total, student) => {
+    const normalizedCode = normalizeText(student.student_code).toUpperCase()
+    if (!normalizedCode) return total
+
+    const latestPayment = latestPaymentByStudent.get(normalizedCode)
+    if (!latestPayment || latestPayment.payment_approved !== 'approved') return total
+    return total + (Number(latestPayment.amount) || 0)
   }, 0)
 
-  const pendingRevenueByStudent = Array.from(latestPaymentByStudent.values()).reduce((total, payment) => {
-    if (payment.payment_approved !== 'pending') return total
-    return total + (Number(payment.amount) || 0)
+  const pendingRevenueByStudent = filteredStudents.reduce((total, student) => {
+    const normalizedCode = normalizeText(student.student_code).toUpperCase()
+    if (!normalizedCode) return total
+
+    const latestPayment = latestPaymentByStudent.get(normalizedCode)
+    if (!latestPayment || latestPayment.payment_approved !== 'pending') return total
+    return total + (Number(latestPayment.amount) || 0)
   }, 0)
 
   // Calculate analytics by department
@@ -237,10 +410,13 @@ const Analytics = () => {
     .filter(d => d !== 'all')
     .map(dept => {
       const deptStudents = students.filter(s => s.department === dept)
-      const deptPaid = deptStudents.filter(s => paidStudentCodes.has(s.student_code))
-      const deptUnpaid = deptStudents.filter(s => !paidStudentCodes.has(s.student_code))
+      const deptPaid = deptStudents.filter((student) => getStudentPaymentState(student.student_code) === 'paid')
+      const deptUnpaid = deptStudents.filter((student) => getStudentPaymentState(student.student_code) === 'not_paid')
       const deptRevenue = deptStudents.reduce((sum, student) => {
-        const latestPayment = latestPaymentByStudent.get(student.student_code)
+        const normalizedCode = normalizeText(student.student_code).toUpperCase()
+        if (!normalizedCode) return sum
+
+        const latestPayment = latestPaymentByStudent.get(normalizedCode)
         if (!latestPayment || latestPayment.payment_approved !== 'approved') return sum
         return sum + (Number(latestPayment.amount) || 0)
       }, 0)
@@ -260,10 +436,13 @@ const Analytics = () => {
     .filter(y => y !== 'all')
     .map(year => {
       const yearStudents = students.filter(s => s.year === year)
-      const yearPaid = yearStudents.filter(s => paidStudentCodes.has(s.student_code))
-      const yearUnpaid = yearStudents.filter(s => !paidStudentCodes.has(s.student_code))
+      const yearPaid = yearStudents.filter((student) => getStudentPaymentState(student.student_code) === 'paid')
+      const yearUnpaid = yearStudents.filter((student) => getStudentPaymentState(student.student_code) === 'not_paid')
       const yearRevenue = yearStudents.reduce((sum, student) => {
-        const latestPayment = latestPaymentByStudent.get(student.student_code)
+        const normalizedCode = normalizeText(student.student_code).toUpperCase()
+        if (!normalizedCode) return sum
+
+        const latestPayment = latestPaymentByStudent.get(normalizedCode)
         if (!latestPayment || latestPayment.payment_approved !== 'approved') return sum
         return sum + (Number(latestPayment.amount) || 0)
       }, 0)
@@ -281,10 +460,10 @@ const Analytics = () => {
   // Calculate overall stats (based on filtered students)
   const totalStudents = filteredStudents.length
   const totalPaid = paidStudents.length
-  const totalUnpaid = unpaidStudents.length
+  const totalPending = notPaidStudents.length
   const totalRevenue = approvedRevenueByStudent
-  const expectedFromUnpaid = pendingRevenueByStudent
-  const potentialRevenue = totalRevenue + expectedFromUnpaid
+  const expectedFromPending = pendingRevenueByStudent
+  const potentialRevenue = totalRevenue + expectedFromPending
   const paymentRate = totalStudents > 0 ? ((totalPaid / totalStudents) * 100).toFixed(1) : 0
 
   // Export Functions
@@ -292,14 +471,14 @@ const Analytics = () => {
     // Prepare CSV data
     const headers = ['#', 'Student Code', 'Name', 'Department', 'Year', 'Payment Status']
     const rows = displayStudents.map((student, index) => {
-      const isPaid = paidStudentCodes.has(student.student_code)
+      const state = getStudentPaymentState(student.student_code)
       return [
         index + 1,
         student.student_code,
         student.student_name,
         student.department,
         student.year,
-        isPaid ? 'Paid' : 'Unpaid'
+        getPaymentStatusLabel(state)
       ]
     })
 
@@ -314,7 +493,7 @@ const Analytics = () => {
     csvContent += 'Summary\n'
     csvContent += `Total Students,${totalStudents}\n`
     csvContent += `Paid Students,${totalPaid}\n`
-    csvContent += `Unpaid Students,${totalUnpaid}\n`
+    csvContent += `Pending List Students,${totalPending}\n`
     csvContent += `Total Revenue,₹${totalRevenue}\n`
     csvContent += `Payment Rate,${paymentRate}%\n`
 
@@ -347,7 +526,7 @@ const Analytics = () => {
     doc.setFontSize(10)
     doc.text(`Total Students: ${totalStudents}`, 14, 46)
     doc.text(`Paid Students: ${totalPaid} (${paymentRate}%)`, 14, 52)
-    doc.text(`Unpaid Students: ${totalUnpaid}`, 14, 58)
+    doc.text(`Pending List Students: ${totalPending}`, 14, 58)
     doc.text(`Total Revenue: ₹${totalRevenue}`, 14, 64)
 
     // Add filter info if any filters are applied
@@ -371,14 +550,14 @@ const Analytics = () => {
 
     // Add student table
     const tableData = displayStudents.map((student, index) => {
-      const isPaid = paidStudentCodes.has(student.student_code)
+      const state = getStudentPaymentState(student.student_code)
       return [
         index + 1,
         student.student_code,
         student.student_name,
         student.department,
         student.year,
-        isPaid ? 'Paid' : 'Unpaid'
+        getPaymentStatusLabel(state)
       ]
     })
 
@@ -511,9 +690,9 @@ const Analytics = () => {
             </svg>
           </div>
           <div className="overview-content">
-            <h3>Unpaid Students</h3>
-            <p className="overview-value">{totalUnpaid}</p>
-            <span className="overview-label">{(100 - paymentRate).toFixed(1)}% Pending</span>
+            <h3>Pending List</h3>
+            <p className="overview-value">{totalPending}</p>
+            <span className="overview-label">No payment submitted yet</span>
           </div>
         </motion.div>
 
@@ -618,8 +797,9 @@ const Analytics = () => {
               className="filter-select"
             >
               <option value="all">All Status</option>
-              <option value="paid">Paid Only</option>
-              <option value="unpaid">Unpaid Only</option>
+              <option value="paid">Paid</option>
+              <option value="waiting_approval">Waiting for Approval</option>
+              <option value="not_paid">Not Paid</option>
             </select>
           </div>
 
@@ -729,8 +909,8 @@ const Analytics = () => {
                     <span className="summary-value success">₹{totalRevenue.toLocaleString()}</span>
                   </div>
                   <div className="summary-item">
-                    <span className="summary-label">Expected from Unpaid</span>
-                      <span className="summary-value pending">₹{expectedFromUnpaid.toLocaleString()}</span>
+                    <span className="summary-label">Expected from Pending Submissions</span>
+                      <span className="summary-value pending">₹{expectedFromPending.toLocaleString()}</span>
                   </div>
                   <div className="summary-item">
                     <span className="summary-label">Potential Total</span>
@@ -790,7 +970,7 @@ const Analytics = () => {
                     <th>Department</th>
                     <th>Total Students</th>
                     <th>Paid</th>
-                    <th>Unpaid</th>
+                    <th>Pending List</th>
                     <th>Payment Rate</th>
                     <th>Revenue</th>
                   </tr>
@@ -827,7 +1007,7 @@ const Analytics = () => {
                     <td><strong>Total</strong></td>
                     <td className="text-center"><strong>{totalStudents}</strong></td>
                     <td className="text-center success"><strong>{totalPaid}</strong></td>
-                    <td className="text-center danger"><strong>{totalUnpaid}</strong></td>
+                    <td className="text-center danger"><strong>{totalPending}</strong></td>
                     <td className="text-center"><strong>{paymentRate}%</strong></td>
                     <td className="text-right"><strong>₹{totalRevenue.toLocaleString()}</strong></td>
                   </tr>
@@ -859,7 +1039,7 @@ const Analytics = () => {
                     <th>Academic Year</th>
                     <th>Total Students</th>
                     <th>Paid</th>
-                    <th>Unpaid</th>
+                    <th>Pending List</th>
                     <th>Payment Rate</th>
                     <th>Revenue</th>
                   </tr>
@@ -924,7 +1104,8 @@ const Analytics = () => {
                 <tbody>
                   {paginatedStudents.length > 0 ? (
                     paginatedStudents.map((student, index) => {
-                      const isPaid = paidStudentCodes.has(student.student_code)
+                      const paymentState = getStudentPaymentState(student.student_code)
+                      const paymentStatusLabel = getPaymentStatusLabel(paymentState)
                       const actualIndex = startIndex + index + 1
                       return (
                         <motion.tr
@@ -932,7 +1113,13 @@ const Analytics = () => {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: Math.min(index * 0.02, 1) }}
-                          className={isPaid ? 'paid-row' : 'unpaid-row'}
+                          className={
+                            paymentState === 'paid'
+                              ? 'paid-row'
+                              : paymentState === 'waiting_approval'
+                                ? 'pending-row'
+                                : 'unpaid-row'
+                          }
                         >
                           <td className="text-center">{actualIndex}</td>
                           <td className="student-code">{student.student_code}</td>
@@ -940,12 +1127,20 @@ const Analytics = () => {
                           <td>{student.department}</td>
                           <td className="text-center">{student.year}</td>
                           <td className="text-center">
-                            {isPaid ? (
+                            {paymentState === 'paid' ? (
                               <span className="status-badge paid">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <polyline points="20 6 9 17 4 12"/>
                                 </svg>
-                                Paid
+                                {paymentStatusLabel}
+                              </span>
+                            ) : paymentState === 'waiting_approval' ? (
+                              <span className="status-badge pending">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <circle cx="12" cy="12" r="10"/>
+                                  <path d="M12 6v6l4 2"/>
+                                </svg>
+                                {paymentStatusLabel}
                               </span>
                             ) : (
                               <span className="status-badge unpaid">
@@ -954,7 +1149,7 @@ const Analytics = () => {
                                   <line x1="15" y1="9" x2="9" y2="15"/>
                                   <line x1="9" y1="9" x2="15" y2="15"/>
                                 </svg>
-                                Unpaid
+                                {paymentStatusLabel}
                               </span>
                             )}
                           </td>

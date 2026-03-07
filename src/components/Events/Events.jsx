@@ -33,24 +33,24 @@ const Events = () => {
             decoding="async"
           />
         </motion.div>
-      </div>
 
-      <motion.div
-        className="register-now-events"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : {}}
-        transition={{ duration: 0.8, delay: 0.7 }}
-      >
-        <a
-          href="https://forms.gle/R9icZUxEevYpWe6L8"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-outline interactive"
+        <motion.div
+          className="register-now-events"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.8, delay: 0.7 }}
         >
-          REGISTER NOW
-          <span className="btn-arrow">→</span>
-        </a>
-      </motion.div>
+          <a
+            href="https://forms.gle/R9icZUxEevYpWe6L8"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-outline interactive"
+          >
+            REGISTER NOW
+            <span className="btn-arrow">→</span>
+          </a>
+        </motion.div>
+      </div>
 
       <motion.div
         className="view-all-events"

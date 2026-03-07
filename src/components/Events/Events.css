@@ -18,7 +18,7 @@
 .events-container {
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: 50px;
+  gap: 16px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -234,7 +234,7 @@
 /* View All Button */
 .register-now-events {
   text-align: center;
-  margin-top: 40px;
+  margin-top: 0;
 }
 
 .view-all-events {
