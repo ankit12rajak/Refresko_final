@@ -273,12 +273,8 @@ class GoogleWalletService
             return true;
         }
 
-        // For non-404 errors when checking class existence, surface the upstream error.
-        if ($httpCode !== 404) {
-            $this->setError("Failed to query existing class. HTTP {$httpCode}: {$this->extractApiError($response)}");
-            return false;
-        }
-
+        // Fall back to create when lookup is blocked by permissions/intermittent errors.
+        // If class already exists, Google returns 409 which we treat as success.
         $url = "{$this->config['api_base_url']}/eventTicketClass";
 
         // Create class only when it does not exist.
@@ -301,6 +297,16 @@ class GoogleWalletService
         if ($response === false) {
             $this->setError('Failed to create/update class (network): ' . $curlError);
             return false;
+        }
+
+        if ($httpCode === 409) {
+            return true;
+        }
+
+        if ($this->isPermissionDeniedResponse($httpCode, $response)) {
+            // Some issuer setups allow Save-to-Wallet JWT but block REST class mutation.
+            // Continue and let object creation/JWT flow proceed.
+            return true;
         }
         
         if ($httpCode < 200 || $httpCode >= 300) {
@@ -407,16 +413,20 @@ class GoogleWalletService
             return null;
         }
         
-        $method = ($httpCode === 404) ? 'POST' : 'PUT';
-        $url = ($httpCode === 404) 
-            ? "{$this->config['api_base_url']}/eventTicketObject"
-            : "{$this->config['api_base_url']}/eventTicketObject/{$objectId}";
-        
-        // Create or update the object
+        // If object already exists, skip update and return a new Save-to-Wallet JWT.
+        if ($httpCode >= 200 && $httpCode < 300) {
+            return $this->generateAddToWalletJWT($objectId);
+        }
+
+        // Fall back to POST creation for both missing and lookup-failed cases.
+        // This helps when object lookup is forbidden but create still works.
+        $url = "{$this->config['api_base_url']}/eventTicketObject";
+
+        // Create the object
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($objectData),
             CURLOPT_HTTPHEADER => [
                 "Authorization: Bearer {$accessToken}",
@@ -433,6 +443,17 @@ class GoogleWalletService
             $this->setError('Failed to create/update gate pass object (network): ' . $curlError);
             return null;
         }
+
+        // Object already exists - continue with JWT generation.
+        if ($httpCode === 409) {
+            return $this->generateAddToWalletJWT($objectId);
+        }
+
+        if ($this->isPermissionDeniedResponse($httpCode, $response)) {
+            // Fallback: include a full object in the JWT so Google Wallet can create
+            // it at save time when REST object APIs are not permitted for this account.
+            return $this->generateAddToWalletJWT($objectId, $objectData);
+        }
         
         if ($httpCode < 200 || $httpCode >= 300) {
             $this->setError("Failed to create gate pass object. HTTP {$httpCode}: {$this->extractApiError($response)}");
@@ -446,7 +467,7 @@ class GoogleWalletService
     /**
      * Generate JWT for "Add to Google Wallet" button
      */
-    private function generateAddToWalletJWT(string $objectId): ?string
+    private function generateAddToWalletJWT(string $objectId, ?array $objectData = null): ?string
     {
         if (!$this->isConfigured()) {
             if ($this->lastError === '') {
@@ -462,6 +483,10 @@ class GoogleWalletService
             'typ' => 'JWT'
         ];
         
+        $walletObjectsPayload = $objectData !== null
+            ? [$objectData]
+            : [[ 'id' => $objectId ]];
+
         $payload = [
             'iss' => $this->credentials['client_email'],
             'aud' => 'google',
@@ -469,11 +494,7 @@ class GoogleWalletService
             'iat' => $now,
             'origins' => [], // Add your domain here if needed
             'payload' => [
-                'eventTicketObjects' => [
-                    [
-                        'id' => $objectId
-                    ]
-                ]
+                'eventTicketObjects' => $walletObjectsPayload
             ]
         ];
         
@@ -537,5 +558,17 @@ class GoogleWalletService
         }
 
         return $response;
+    }
+
+    private function isPermissionDeniedResponse(int $httpCode, string $response): bool
+    {
+        if ($httpCode !== 403) {
+            return false;
+        }
+
+        $errorText = strtolower($this->extractApiError($response));
+        return strpos($errorText, 'permission denied') !== false
+            || strpos($errorText, 'insufficient permissions') !== false
+            || strpos($errorText, 'forbidden') !== false;
     }
 }

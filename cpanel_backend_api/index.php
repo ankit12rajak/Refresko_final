@@ -23,6 +23,16 @@ if ($scriptDir !== '' && strpos($path, $scriptDir) === 0) {
     $path = substr($path, strlen($scriptDir));
 }
 $path = '/' . ltrim($path, '/');
+
+// Support deployments that proxy requests with an /api prefix even when
+// this app is served from the domain root (no physical "api" folder).
+if ($path === '/api') {
+    $path = '/';
+} elseif (strpos($path, '/api/') === 0) {
+    $path = substr($path, 4);
+    $path = '/' . ltrim($path, '/');
+}
+
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
 try {

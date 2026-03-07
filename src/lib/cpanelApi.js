@@ -75,7 +75,11 @@ const request = async (path, { method = 'GET', headers = {}, body, query, timeou
         const payload = await parseJsonSafe(response)
 
         if (!response.ok || payload?.success === false) {
-          const message = payload?.message || payload?.error || `Request failed with status ${response.status}`
+          const primaryMessage = payload?.message || payload?.error || `Request failed with status ${response.status}`
+          const details = typeof payload?.details === 'string' ? payload.details.trim() : ''
+          const message = details && !primaryMessage.includes(details)
+            ? `${primaryMessage} (${details})`
+            : primaryMessage
           const error = new Error(message)
           error.status = response.status
           error.payload = payload
