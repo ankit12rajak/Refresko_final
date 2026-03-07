@@ -2221,3 +2221,95 @@ body {
   box-shadow: none;
   transform: none;
 }
+
+/* Google Wallet Integration Styles */
+.google-wallet-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.google-wallet-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
+}
+
+.google-wallet-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1557b0 0%, #0d47a1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4);
+}
+
+.google-wallet-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.google-wallet-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.google-wallet-btn svg {
+  flex-shrink: 0;
+}
+
+.wallet-loading {
+  animation: wallet-spin 1s linear infinite;
+}
+
+@keyframes wallet-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.google-wallet-error {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 6px;
+  color: #e74c3c;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.google-wallet-hint {
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Responsive Google Wallet Styles */
+@media (max-width: 768px) {
+  .google-wallet-section {
+    padding: 15px;
+  }
+  
+  .google-wallet-btn {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+  
+  .google-wallet-hint {
+    font-size: 0.8rem;
+  }
+}

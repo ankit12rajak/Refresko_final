@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Google Wallet Credentials (NEVER COMMIT!)
+google-wallet-credentials.json
+*-credentials.json
+cpanel_backend_api/config/google_wallet_credentials.json

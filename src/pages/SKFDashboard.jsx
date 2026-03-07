@@ -54,6 +54,8 @@ const SKFDashboard = () => {
   const [gatePassQrCodeUrl, setGatePassQrCodeUrl] = useState('')
   const [paymentConfig, setPaymentConfig] = useState(() => loadPaymentConfig())
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false)
+  const [googleWalletLoading, setGoogleWalletLoading] = useState(false)
+  const [googleWalletError, setGoogleWalletError] = useState('')
 
   const activePaymentOption = useMemo(
     () => getActivePaymentOption(paymentConfig),
@@ -373,6 +375,32 @@ const SKFDashboard = () => {
     
     // Redirect to home
     navigate('/')
+  }
+
+  const handleAddToGoogleWallet = async () => {
+    if (!isPaymentApproved || !isGatePassCreated) {
+      setGoogleWalletError('Gate pass not available yet')
+      return
+    }
+
+    setGoogleWalletLoading(true)
+    setGoogleWalletError('')
+
+    try {
+      const response = await cpanelApi.generateGoogleWalletPass(student.studentId)
+      
+      if (response?.success && response?.save_url) {
+        // Open Google Wallet save URL in a new window
+        window.open(response.save_url, '_blank', 'width=600,height=800')
+      } else {
+        throw new Error(response?.error || 'Failed to generate Google Wallet pass')
+      }
+    } catch (error) {
+      console.error('Google Wallet error:', error)
+      setGoogleWalletError(error.message || 'Failed to add to Google Wallet. Please try again.')
+    } finally {
+      setGoogleWalletLoading(false)
+    }
   }
 
   const handleMakePayment = () => {
@@ -787,6 +815,33 @@ const SKFDashboard = () => {
 
                   <div className="pass-footer">
                     <span className="pass-status valid">✓ VALID PASS</span>
+                  </div>
+
+                  {/* Google Wallet Button */}
+                  <div className="google-wallet-section">
+                    <button 
+                      className="google-wallet-btn"
+                      onClick={handleAddToGoogleWallet}
+                      disabled={googleWalletLoading}
+                    >
+                      {googleWalletLoading ? (
+                        <>
+                          <span className="wallet-loading">⏳</span>
+                          <span>Adding to Wallet...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" fill="currentColor"/>
+                          </svg>
+                          <span>Add to Google Wallet</span>
+                        </>
+                      )}
+                    </button>
+                    {googleWalletError && (
+                      <p className="google-wallet-error">{googleWalletError}</p>
+                    )}
+                    <p className="google-wallet-hint">Save your gate pass to your phone for quick access</p>
                   </div>
                 </div>
                 ) : (

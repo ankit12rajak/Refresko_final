@@ -75,7 +75,7 @@ const request = async (path, { method = 'GET', headers = {}, body, query, timeou
         const payload = await parseJsonSafe(response)
 
         if (!response.ok || payload?.success === false) {
-          const message = payload?.message || `Request failed with status ${response.status}`
+          const message = payload?.message || payload?.error || `Request failed with status ${response.status}`
           const error = new Error(message)
           error.status = response.status
           error.payload = payload
@@ -417,5 +417,19 @@ export const cpanelApi = {
         day
       })
     })
+  },
+
+  // Google Wallet Integration
+  generateGoogleWalletPass: async (studentCode) => {
+    if (!studentCode) {
+      throw new Error('Student code is required')
+    }
+    return request('/google-wallet/generate', {
+      query: { student_code: studentCode }
+    })
+  },
+
+  getGoogleWalletStatus: async () => {
+    return request('/google-wallet/status')
   }
 }

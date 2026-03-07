@@ -13,6 +13,7 @@ require_once __DIR__ . '/routes/payments.php';
 require_once __DIR__ . '/routes/admin.php';
 require_once __DIR__ . '/routes/super_admin.php';
 require_once __DIR__ . '/routes/staff.php';
+require_once __DIR__ . '/routes/google_wallet.php';
 
 apply_cors();
 
@@ -119,6 +120,14 @@ try {
 
     if ($method === 'POST' && $path === '/staff/gate-entry') {
         staff_mark_gate_entry();
+    }
+
+    if ($method === 'GET' && $path === '/google-wallet/generate') {
+        google_wallet_generate();
+    }
+
+    if ($method === 'GET' && $path === '/google-wallet/status') {
+        google_wallet_status();
     }
 
     json_response(['success' => false, 'message' => 'Route not found', 'route' => $path], 404);
