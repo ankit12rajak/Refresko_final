@@ -15,6 +15,10 @@ const StaffPortal = () => {
   const [studentCode, setStudentCode] = useState('')
   const [qrData, setQrData] = useState('')
   const [entryMessage, setEntryMessage] = useState('')
+  const [searchText, setSearchText] = useState('')
+  const [paymentFilter, setPaymentFilter] = useState('all')
+  const [departmentFilter, setDepartmentFilter] = useState('all')
+  const [yearFilter, setYearFilter] = useState('all')
 
   const staffRole = (localStorage.getItem('staffRole') || '').toLowerCase()
   const staffName = localStorage.getItem('staffName') || localStorage.getItem('staffUsername') || 'Staff'
@@ -123,6 +127,131 @@ const StaffPortal = () => {
     return { label: 'Not Paid', className: 'status-chip status-danger' }
   }
 
+  const filteredTransactions = useMemo(() => {
+    const query = String(searchText || '').trim().toLowerCase()
+
+    return transactions.filter((row) => {
+      const paymentStatus = getPaymentLabelMeta(row.payment_approved || row.status)
+      const statusMatches = paymentFilter === 'all'
+        || (paymentFilter === 'paid' && paymentStatus.label === 'Paid')
+        || (paymentFilter === 'waiting' && paymentStatus.label === 'Waiting for Approval')
+        || (paymentFilter === 'not_paid' && paymentStatus.label === 'Not Paid')
+
+      if (!statusMatches) return false
+
+      const rowDepartment = String(row.department || '').trim()
+      const rowYear = String(row.year || '').trim()
+      const departmentMatches = departmentFilter === 'all' || rowDepartment === departmentFilter
+      const yearMatches = yearFilter === 'all' || rowYear === yearFilter
+      if (!departmentMatches || !yearMatches) return false
+
+      if (query === '') return true
+
+      const studentCodeText = String(row.student_code || '').toLowerCase()
+      const studentNameText = String(row.student_name || '').toLowerCase()
+      const phoneText = String(row.phone || '').toLowerCase()
+      return studentCodeText.includes(query) || studentNameText.includes(query) || phoneText.includes(query)
+    })
+  }, [transactions, searchText, paymentFilter, departmentFilter, yearFilter])
+
+  const filteredPendingList = useMemo(() => {
+    const query = String(searchText || '').trim().toLowerCase()
+    if (paymentFilter === 'paid' || paymentFilter === 'waiting') {
+      return []
+    }
+
+    return pendingList.filter((row) => {
+      const rowDepartment = String(row.department || '').trim()
+      const rowYear = String(row.year || '').trim()
+      const departmentMatches = departmentFilter === 'all' || rowDepartment === departmentFilter
+      const yearMatches = yearFilter === 'all' || rowYear === yearFilter
+      if (!departmentMatches || !yearMatches) return false
+
+      if (query === '') return true
+      const studentCodeText = String(row.student_code || '').toLowerCase()
+      const studentNameText = String(row.name || '').toLowerCase()
+      const phoneText = String(row.phone || '').toLowerCase()
+      return studentCodeText.includes(query) || studentNameText.includes(query) || phoneText.includes(query)
+    })
+  }, [pendingList, searchText, paymentFilter, departmentFilter, yearFilter])
+
+  const departmentOptions = useMemo(() => {
+    const values = new Set()
+    transactions.forEach((row) => {
+      const value = String(row.department || '').trim()
+      if (value) values.add(value)
+    })
+    pendingList.forEach((row) => {
+      const value = String(row.department || '').trim()
+      if (value) values.add(value)
+    })
+    return ['all', ...Array.from(values).sort((a, b) => a.localeCompare(b))]
+  }, [transactions, pendingList])
+
+  const yearOptions = useMemo(() => {
+    const values = new Set()
+    transactions.forEach((row) => {
+      const value = String(row.year || '').trim()
+      if (value) values.add(value)
+    })
+    pendingList.forEach((row) => {
+      const value = String(row.year || '').trim()
+      if (value) values.add(value)
+    })
+    return ['all', ...Array.from(values).sort((a, b) => a.localeCompare(b))]
+  }, [transactions, pendingList])
+
+  const toCsvCell = (value) => {
+    const text = String(value ?? '')
+    return `"${text.replace(/"/g, '""')}"`
+  }
+
+  const handleExportFilteredCsv = () => {
+    const lines = []
+
+    lines.push('Filtered Payment Records')
+    const paymentHeaders = ['Student Code', 'Name', 'Mobile', 'Department', 'Year', 'Amount', 'Status']
+    lines.push(paymentHeaders.map(toCsvCell).join(','))
+    filteredTransactions.forEach((row) => {
+      const paymentStatus = getPaymentLabelMeta(row.payment_approved || row.status)
+      lines.push([
+        row.student_code,
+        row.student_name,
+        row.phone || '-',
+        row.department || '',
+        row.year || '',
+        row.amount ?? '',
+        paymentStatus.label,
+      ].map(toCsvCell).join(','))
+    })
+
+    lines.push('')
+    lines.push('Filtered Pending Students')
+    const pendingHeaders = ['Student Code', 'Name', 'Mobile', 'Department', 'Year', 'Status']
+    lines.push(pendingHeaders.map(toCsvCell).join(','))
+    filteredPendingList.forEach((row) => {
+      lines.push([
+        row.student_code,
+        row.name,
+        row.phone || '-',
+        row.department || '',
+        row.year || '',
+        'Not Paid',
+      ].map(toCsvCell).join(','))
+    })
+
+    const csvContent = lines.join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `staff_portal_filtered_${new Date().toISOString().slice(0, 10)}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   const handleLogout = async () => {
     try {
       if (token) {
@@ -205,6 +334,69 @@ const StaffPortal = () => {
             </div>
 
             <div className="staff-card">
+              <h2>Filters</h2>
+              <div className="staff-filters">
+                <label>
+                  Search Student
+                  <input
+                    type="text"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    placeholder="Student code, name, or mobile"
+                  />
+                </label>
+                <label>
+                  Department
+                  <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}>
+                    <option value="all">All Departments</option>
+                    {departmentOptions.filter((value) => value !== 'all').map((value) => (
+                      <option key={value} value={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Year
+                  <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
+                    <option value="all">All Years</option>
+                    {yearOptions.filter((value) => value !== 'all').map((value) => (
+                      <option key={value} value={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Payment Status
+                  <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}>
+                    <option value="all">All</option>
+                    <option value="paid">Paid</option>
+                    <option value="waiting">Waiting for Approval</option>
+                    <option value="not_paid">Not Paid</option>
+                  </select>
+                </label>
+                <div className="staff-filter-actions">
+                  <button
+                    type="button"
+                    className="staff-btn staff-filter-clear"
+                    onClick={() => {
+                      setSearchText('')
+                      setPaymentFilter('all')
+                      setDepartmentFilter('all')
+                      setYearFilter('all')
+                    }}
+                  >
+                    Clear Filters
+                  </button>
+                  <button
+                    type="button"
+                    className="staff-btn"
+                    onClick={handleExportFilteredCsv}
+                  >
+                    Export CSV
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="staff-card">
               <h2>Payment Records</h2>
               <div className="table-wrap">
                 <table>
@@ -218,11 +410,11 @@ const StaffPortal = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.length === 0 ? (
+                    {filteredTransactions.length === 0 ? (
                       <tr>
-                        <td colSpan={isCr ? 4 : 5} className="empty-row">No payment records found</td>
+                        <td colSpan={isCr ? 4 : 5} className="empty-row">No payment records found for current filters</td>
                       </tr>
-                    ) : transactions.map((row) => {
+                    ) : filteredTransactions.map((row) => {
                       const paymentStatus = getPaymentLabelMeta(row.payment_approved || row.status)
                       return (
                       <tr key={row.payment_id || `${row.student_code}-${row.transaction_id || row.created_at || ''}`}>
@@ -257,11 +449,11 @@ const StaffPortal = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pendingList.length === 0 ? (
+                    {filteredPendingList.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="empty-row">No pending students</td>
+                        <td colSpan={6} className="empty-row">No pending students found for current filters</td>
                       </tr>
-                    ) : pendingList.map((row) => (
+                    ) : filteredPendingList.map((row) => (
                       <tr key={`${row.student_code}-${row.name}`}>
                         <td>{row.student_code}</td>
                         <td>{row.name}</td>
