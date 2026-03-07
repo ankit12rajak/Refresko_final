@@ -680,65 +680,67 @@ const SKFDashboard = () => {
                 </div>
 
                 {/* Action Cards */}
-                <div className="action-cards">
-                  {/* Contribute to Fest Card */}
-                  <motion.div 
-                    className="action-card contribute-card"
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="action-icon"><CreditCard size={24} strokeWidth={2} /></div>
-                    <h3>Contribute to Fest</h3>
-                    <p>
-                      Complete your registration by making the fest payment.
-                      {isFoodIncluded ? ' Select your food preference and proceed to payment.' : ' Food is not included for this amount and payment opens directly.'}
-                    </p>
-                    <div className="payment-highlight">
-                      <div className="payment-amount">
-                        <span className="amount-label">Registration Fee</span>
-                        <span className="amount-value">₹{configuredPaymentAmount}</span>
-                      </div>
-                      <div className="payment-includes">
-                        <span>✓ All Event Access</span>
-                        <span>{isFoodIncluded ? '✓ Food & Refreshments' : '✕ Food Not Included'}</span>
-                        <span>✓ Merchandise Voucher</span>
-                      </div>
-                    </div>
-                    <button
-                      className="action-btn"
-                      onClick={handleMakePayment}
-                      disabled={isPaymentCompleted}
+                {!isPaymentCompleted && (
+                  <div className="action-cards">
+                    {/* Contribute to Fest Card */}
+                    <motion.div 
+                      className="action-card contribute-card"
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <span>{isPaymentCompleted ? 'Payment Completed' : 'Make Payment'}</span>
-                    </button>
-                  </motion.div>
-
-                  {/* Register for Events Card */}
-                  {/* <motion.div 
-                    className="action-card events-card"
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="action-icon">🎪</div>
-                    <h3>Register for Events</h3>
-                    <p>Explore and register for exciting events at Refresko 2026!</p>
-                    
-                    {student.registeredEvents.length > 0 && (
-                      <div className="registered-events">
-                        <span className="events-label">Your Registered Events:</span>
-                        <div className="events-tags">
-                          {student.registeredEvents.map((event, index) => (
-                            <span key={index} className="event-tag">{event}</span>
-                          ))}
+                      <div className="action-icon"><CreditCard size={24} strokeWidth={2} /></div>
+                      <h3>Contribute to Fest</h3>
+                      <p>
+                        Complete your registration by making the fest payment.
+                        {isFoodIncluded ? ' Select your food preference and proceed to payment.' : ' Food is not included for this amount and payment opens directly.'}
+                      </p>
+                      <div className="payment-highlight">
+                        <div className="payment-amount">
+                          <span className="amount-label">Registration Fee</span>
+                          <span className="amount-value">₹{configuredPaymentAmount}</span>
+                        </div>
+                        <div className="payment-includes">
+                          <span>✓ All Event Access</span>
+                          <span>{isFoodIncluded ? '✓ Food & Refreshments' : '✕ Food Not Included'}</span>
+                          <span>✓ Merchandise Voucher</span>
                         </div>
                       </div>
-                    )}
-                    
-                    <button className="action-btn secondary">
-                      <span>Browse All Events</span>
-                    </button>
-                  </motion.div> */}
-                </div>
+                      <button
+                        className="action-btn"
+                        onClick={handleMakePayment}
+                        disabled={isPaymentCompleted}
+                      >
+                        <span>{isPaymentCompleted ? 'Payment Completed' : 'Make Payment'}</span>
+                      </button>
+                    </motion.div>
+
+                    {/* Register for Events Card */}
+                    {/* <motion.div 
+                      className="action-card events-card"
+                      whileHover={{ scale: 1.02, y: -5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="action-icon">🎪</div>
+                      <h3>Register for Events</h3>
+                      <p>Explore and register for exciting events at Refresko 2026!</p>
+                      
+                      {student.registeredEvents.length > 0 && (
+                        <div className="registered-events">
+                          <span className="events-label">Your Registered Events:</span>
+                          <div className="events-tags">
+                            {student.registeredEvents.map((event, index) => (
+                              <span key={index} className="event-tag">{event}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <button className="action-btn secondary">
+                        <span>Browse All Events</span>
+                      </button>
+                    </motion.div> */}
+                  </div>
+                )}
 
                 {/* Gate Pass Preview Card - Shows only if payment is approved */}
                 {isPaymentApproved && (
