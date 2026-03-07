@@ -984,7 +984,7 @@ const SKFDashboard = () => {
                       <h2>Payment Receipt</h2>
                       <div className="receipt-title-right">
                         <span className="receipt-number">#{payment.transactionId}</span>
-                        <span className="receipt-meta-chip">UTR #{payment.utrNo || 'N/A'}</span>
+                        {/* <span className="receipt-meta-chip">UTR #{payment.utrNo || 'N/A'}</span> */}
                       </div>
                     </div>
 
