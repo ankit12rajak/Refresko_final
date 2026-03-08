@@ -150,7 +150,7 @@ const ComingSoonPage = ({ title, subtitle, launchLine }) => {
 					>
 						<a
 							className="btn-outline register-now-btn interactive"
-							href="https://forms.gle/R9icZUxEevYpWe6L8"
+							href="https://forms.gle/QF4pPtpHZ2GPEUYV7"
 							target="_blank"
 							rel="noopener noreferrer"
 						>

@@ -41,7 +41,7 @@ const Events = () => {
           transition={{ duration: 0.8, delay: 0.7 }}
         >
           <a
-            href="https://forms.gle/R9icZUxEevYpWe6L8"
+            href="https://forms.gle/QF4pPtpHZ2GPEUYV7"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-outline interactive"
