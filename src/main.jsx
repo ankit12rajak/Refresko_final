@@ -13,6 +13,7 @@ import SKFDashboard from './pages/SKFDashboard.jsx'
 import PaymentGateway from './pages/PaymentGateway.jsx'
 import StaffLogin from './pages/StaffLogin.jsx'
 import StaffPortal from './pages/StaffPortal.jsx'
+import Gallery from './components/Gallery/Gallery.jsx'
 
 const APP_BUILD_ID = typeof __APP_BUILD_ID__ !== 'undefined' ? String(__APP_BUILD_ID__) : 'dev'
 const BUILD_STORAGE_KEY = 'refresko_app_build_id'
@@ -92,16 +93,7 @@ const renderApp = () => {
               />
             }
           />
-          <Route
-            path="/gallery"
-            element={
-              <ComingSoonPage
-                title="Gallery"
-                subtitle="A cinematic archive of Refresko moments, crafted for the boldest minds."
-                launchLine="MARCH 2026"
-              />
-            }
-          />
+          <Route path="/gallery" element={<Gallery />} />
         </Routes>
       </BrowserRouter>
     </StrictMode>,
