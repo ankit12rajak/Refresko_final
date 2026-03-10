@@ -336,7 +336,7 @@ const SKFDashboard = () => {
     try {
       const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(receiptCardRef.current, {
-        backgroundColor: '#0b0f18',
+        backgroundColor: '#0F0F0F',
         scale: 2,
         useCORS: true,
       })

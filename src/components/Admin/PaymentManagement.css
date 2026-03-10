@@ -25,7 +25,7 @@
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--color-primary);
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(255, 0, 51, 0.2);
+  box-shadow: 0 10px 30px rgba(229, 57, 53, 0.2);
 }
 
 .card-icon {
@@ -44,18 +44,18 @@
 }
 
 .card-icon.revenue {
-  background: rgba(0, 255, 127, 0.1);
-  color: #00ff7f;
+  background: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
 }
 
 .card-icon.pending {
-  background: rgba(255, 165, 0, 0.1);
-  color: #ffa500;
+  background: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
 }
 
 .card-icon.total {
-  background: rgba(0, 191, 255, 0.1);
-  color: #00bfff;
+  background: rgba(122, 31, 162, 0.1);
+  color: #7A1FA2;
 }
 
 .card-content h3 {
@@ -122,8 +122,8 @@
 .search-box input:focus {
   outline: none;
   border-color: var(--color-primary);
-  background: rgba(255, 0, 51, 0.05);
-  box-shadow: 0 0 20px rgba(255, 0, 51, 0.2);
+  background: rgba(229, 57, 53, 0.05);
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.2);
 }
 
 .filter-buttons {
@@ -156,14 +156,14 @@
 }
 
 .filter-btn.export-csv-btn {
-  border-color: rgba(0, 191, 255, 0.45);
-  color: #00bfff;
+  border-color: rgba(122, 31, 162, 0.45);
+  color: #7A1FA2;
 }
 
 .filter-btn.export-csv-btn:hover:not(:disabled) {
-  background: rgba(0, 191, 255, 0.15);
-  border-color: #00bfff;
-  color: #7fdfff;
+  background: rgba(122, 31, 162, 0.15);
+  border-color: #7A1FA2;
+  color: #FFE082;
 }
 
 .filter-btn:disabled {
@@ -185,7 +185,7 @@
 }
 
 .payment-table thead {
-  background: rgba(255, 0, 51, 0.1);
+  background: rgba(229, 57, 53, 0.1);
 }
 
 .payment-table th {
@@ -197,7 +197,7 @@
   padding: 18px 15px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  border-bottom: 1px solid rgba(255, 0, 51, 0.3);
+  border-bottom: 1px solid rgba(229, 57, 53, 0.3);
 }
 
 .payment-table tbody tr {
@@ -241,7 +241,7 @@
 .amount {
   font-family: var(--font-heading);
   font-weight: 700;
-  color: #00ff7f;
+  color: #FFC107;
 }
 
 .status-badge {
@@ -255,27 +255,27 @@
 }
 
 .status-badge.completed {
-  background: rgba(0, 255, 127, 0.2);
-  color: #00ff7f;
-  border: 1px solid rgba(0, 255, 127, 0.5);
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+  border: 1px solid rgba(255, 193, 7, 0.5);
 }
 
 .status-badge.approved {
-  background: rgba(0, 255, 127, 0.2);
-  color: #00ff7f;
-  border: 1px solid rgba(0, 255, 127, 0.5);
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+  border: 1px solid rgba(255, 193, 7, 0.5);
 }
 
 .status-badge.pending {
-  background: rgba(255, 165, 0, 0.2);
-  color: #ffa500;
-  border: 1px solid rgba(255, 165, 0, 0.5);
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC107;
+  border: 1px solid rgba(255, 193, 7, 0.5);
 }
 
 .status-badge.declined {
-  background: rgba(255, 77, 77, 0.2);
-  color: #ff4d4d;
-  border: 1px solid rgba(255, 77, 77, 0.5);
+  background: rgba(229, 57, 53, 0.2);
+  color: #E53935;
+  border: 1px solid rgba(229, 57, 53, 0.5);
 }
 
 .action-buttons {
@@ -302,7 +302,7 @@
 }
 
 .action-btn:hover {
-  background: rgba(255, 0, 51, 0.1);
+  background: rgba(229, 57, 53, 0.1);
   border-color: var(--color-primary);
 }
 
@@ -384,8 +384,8 @@
 }
 
 .receipt-modal {
-  background: rgba(10, 10, 10, 0.95);
-  border: 1px solid rgba(255, 0, 51, 0.3);
+  background: rgba(26, 26, 26, 0.95);
+  border: 1px solid rgba(229, 57, 53, 0.3);
   border-radius: 15px;
   max-width: 600px;
   width: 100%;
@@ -464,10 +464,10 @@
 }
 
 .detail-row.highlight {
-  background: rgba(255, 0, 51, 0.1);
+  background: rgba(229, 57, 53, 0.1);
   padding: 15px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 0, 51, 0.3);
+  border: 1px solid rgba(229, 57, 53, 0.3);
   margin-top: 10px;
 }
 
@@ -525,23 +525,23 @@
 }
 
 .receipt-action-btn.approve {
-  background: rgba(0, 255, 127, 0.15);
-  color: #00ff7f;
-  border-color: rgba(0, 255, 127, 0.35);
+  background: rgba(255, 193, 7, 0.15);
+  color: #FFC107;
+  border-color: rgba(255, 193, 7, 0.35);
 }
 
 .receipt-action-btn.approve:hover:not(:disabled) {
-  background: rgba(0, 255, 127, 0.25);
+  background: rgba(255, 193, 7, 0.25);
 }
 
 .receipt-action-btn.decline {
-  background: rgba(255, 77, 77, 0.15);
-  color: #ff4d4d;
-  border-color: rgba(255, 77, 77, 0.35);
+  background: rgba(229, 57, 53, 0.15);
+  color: #E53935;
+  border-color: rgba(229, 57, 53, 0.35);
 }
 
 .receipt-action-btn.decline:hover:not(:disabled) {
-  background: rgba(255, 77, 77, 0.25);
+  background: rgba(229, 57, 53, 0.25);
 }
 
 .receipt-action-btn:disabled {
@@ -572,13 +572,13 @@
 }
 
 .download-receipt-btn:hover {
-  box-shadow: 0 0 30px rgba(255, 0, 51, 0.5);
+  box-shadow: 0 0 30px rgba(229, 57, 53, 0.5);
   transform: translateY(-2px);
 }
 
 .screenshot-modal {
-  background: rgba(10, 10, 10, 0.97);
-  border: 1px solid rgba(255, 0, 51, 0.3);
+  background: rgba(26, 26, 26, 0.97);
+  border: 1px solid rgba(229, 57, 53, 0.3);
   border-radius: 14px;
   width: min(92vw, 900px);
   max-height: 90vh;

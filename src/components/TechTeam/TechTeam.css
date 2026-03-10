@@ -14,7 +14,7 @@
   width: 550px;
   height: 550px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.15), transparent 70%);
   filter: blur(120px);
   opacity: 0.5;
   pointer-events: none;
@@ -92,8 +92,8 @@
   font-size: 0.75rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 0 20px rgba(255, 0, 51, 0.8),
-               0 0 40px rgba(255, 0, 51, 0.6),
+  text-shadow: 0 0 20px rgba(229, 57, 53, 0.8),
+               0 0 40px rgba(229, 57, 53, 0.6),
                0 4px 20px rgba(0, 0, 0, 0.8);
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -116,7 +116,7 @@
   height: 280px;
   overflow: hidden;
   border-radius: 10px;
-  background: var(--color-background-light, #111);
+  background: var(--color-background-light, #1A1A1A);
 }
 
 /* Avatar placeholder (since no photos) */
@@ -187,7 +187,7 @@
 .hex {
   width: 40px;
   height: 40px;
-  border: 1px solid rgba(255, 0, 51, 0.15);
+  border: 1px solid rgba(229, 57, 53, 0.15);
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   animation: hexPulse 3s ease-in-out infinite;
 }
@@ -204,7 +204,7 @@
   left: 0;
   right: 0;
   height: 60%;
-  background: linear-gradient(to top, rgba(255, 0, 51, 0.8), transparent);
+  background: linear-gradient(to top, rgba(229, 57, 53, 0.8), transparent);
   display: flex;
   align-items: flex-end;
   padding: 25px;

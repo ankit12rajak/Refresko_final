@@ -31,7 +31,7 @@
   transform: translateX(-50%);
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #e0e0e0, #b0b0b0);
+  background: linear-gradient(135deg, #BDBDBD, #BDBDBD);
   border-radius: 40% 40% 30% 30%;
   box-shadow: inset -5px -5px 15px rgba(0,0,0,0.2);
 }
@@ -42,9 +42,9 @@
   left: 10%;
   right: 10%;
   height: 35%;
-  background: linear-gradient(180deg, #1a1a2e, #16213e);
+  background: linear-gradient(180deg, #1A1A1A, #7A1FA2);
   border-radius: 20px;
-  box-shadow: 0 0 20px rgba(255, 0, 51, 0.3);
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.3);
 }
 
 .robot-body {
@@ -54,7 +54,7 @@
   transform: translateX(-50%);
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, #e8e8e8, #c0c0c0);
+  background: linear-gradient(135deg, #BDBDBD, #BDBDBD);
   border-radius: 20px 20px 30px 30px;
 }
 
@@ -63,7 +63,7 @@
   top: 90px;
   width: 25px;
   height: 70px;
-  background: linear-gradient(135deg, #d0d0d0, #a0a0a0);
+  background: linear-gradient(135deg, #BDBDBD, #7A1FA2);
   border-radius: 15px;
 }
 
@@ -81,7 +81,7 @@
   position: absolute;
   top: 30px;
   right: -60px;
-  background: var(--color-primary);
+  background: var(--brand-gradient);
   padding: 5px 15px;
   font-family: var(--font-heading);
   font-size: 0.8rem;
@@ -98,7 +98,7 @@
   transform: translateY(-50%);
   width: 40px;
   height: 3px;
-  background: #888;
+  background: #BDBDBD;
 }
 
 /* Footer Content */
@@ -118,12 +118,15 @@
 }
 
 .footer-heading .accent {
-  color: var(--color-primary);
-  text-shadow: 0 0 30px rgba(255, 0, 51, 0.5);
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 28px rgba(122, 31, 162, 0.35);
 }
 
 .footer-btn {
-  background: var(--color-primary);
+  background: var(--brand-gradient);
   border: none;
   color: var(--color-secondary);
   font-family: var(--font-body);
@@ -136,7 +139,8 @@
 }
 
 .footer-btn:hover {
-  box-shadow: 0 0 40px rgba(255, 0, 51, 0.5);
+  background: var(--brand-gradient-hover);
+  box-shadow: 0 12px 30px rgba(122, 31, 162, 0.4);
   transform: scale(1.05);
 }
 
@@ -166,9 +170,9 @@
 }
 
 .social-icon:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: rgba(255, 0, 51, 0.1);
+  border-color: #FFC107;
+  color: #FFFFFF;
+  background: var(--brand-gradient-soft);
 }
 
 .footer-links {
@@ -188,7 +192,7 @@
 }
 
 .footer-link:hover {
-  color: var(--color-primary);
+  color: #FFE082;
 }
 
 .link-divider {

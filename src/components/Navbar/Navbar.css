@@ -5,14 +5,13 @@
   right: 0;
   z-index: 1000;
   padding: 20px 5%;
+  background: transparent;
   transition: all 0.3s ease;
 }
 
 .navbar.scrolled {
-  background: rgba(5, 5, 5, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 0, 51, 0.2);
+  background: transparent;
+  border-bottom: none;
   padding: 15px 5%;
 }
 
@@ -24,30 +23,38 @@
   max-width: 1600px;
   margin: 0 auto;
   position: relative;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-family: var(--font-heading);
   font-size: 1.5rem;
   min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .logo-icons-row {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  gap: 12px;
+  padding: 10px 16px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(255, 255, 255, 0.06);
 }
 
 .brand-logo-img {
-  width: 36px;
-  height: 36px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
 }
@@ -59,17 +66,13 @@
   font-weight: 700;
 }
 
-.logo-main {
-  color: var(--color-secondary);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-}
-
 .logo-year {
-  color: var(--color-primary);
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   font-weight: 300;
-  text-shadow: 0 0 10px var(--color-primary);
+  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
   white-space: nowrap;
 }
 
@@ -77,15 +80,16 @@
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 0, 51, 0.3);
+  border: 1px solid rgba(229, 57, 53, 0.3);
   border-radius: 12px;
   padding: 18px 35px;
-  box-shadow: 0 0 20px rgba(255, 0, 51, 0.15),
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.15),
               inset 0 1px 1px rgba(255, 255, 255, 0.1);
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   transition: all 0.3s ease;
+  z-index: 1;
 }
 
 .nav-links-glass-box::before {
@@ -94,10 +98,7 @@
   inset: -1px;
   border-radius: 12px;
   padding: 1px;
-  background: linear-gradient(135deg, 
-    rgba(255, 0, 51, 0.4) 0%, 
-    rgba(255, 0, 51, 0.1) 50%, 
-    rgba(255, 0, 51, 0.4) 100%);
+  background: var(--brand-gradient-soft);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -106,9 +107,9 @@
 }
 
 .nav-links-glass-box:hover {
-  box-shadow: 0 0 30px rgba(255, 0, 51, 0.25),
+  box-shadow: 0 0 30px rgba(229, 57, 53, 0.25),
               inset 0 1px 1px rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 0, 51, 0.5);
+  border-color: rgba(229, 57, 53, 0.5);
 }
 
 .nav-links-glass-box:hover::before {
@@ -134,7 +135,7 @@
 }
 
 .nav-link:hover {
-  color: var(--color-primary);
+  color: #FFE082;
 }
 
 .link-underline {
@@ -143,7 +144,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--color-primary);
+  background: var(--brand-gradient);
   transition: width 0.3s ease;
 }
 
@@ -156,6 +157,8 @@
   align-items: center;
   gap: 20px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .cart-btn {
@@ -172,12 +175,12 @@
 }
 
 .cart-btn:hover {
-  color: var(--color-primary);
+  color: #FFE082;
 }
 
 .login-btn {
-  background: transparent;
-  border: 1px solid var(--color-primary);
+  background: var(--brand-gradient);
+  border: 1px solid transparent;
   color: var(--color-secondary);
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -188,8 +191,9 @@
 }
 
 .login-btn:hover {
-  background: var(--color-primary);
-  color: var(--color-background);
+  background: var(--brand-gradient-hover);
+  color: var(--color-secondary);
+  box-shadow: 0 10px 22px rgba(122, 31, 162, 0.35);
 }
 
 .login-menu-wrapper {
@@ -201,11 +205,11 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 180px;
-  background: rgba(10, 10, 10, 0.95);
-  border: 1px solid rgba(255, 0, 51, 0.35);
+  background: linear-gradient(135deg, rgba(122, 31, 162, 0.35), rgba(229, 57, 53, 0.28), rgba(26, 26, 26, 0.95));
+  border: 1px solid rgba(229, 57, 53, 0.35);
   backdrop-filter: blur(12px);
   z-index: 1200;
-  box-shadow: 0 10px 30px rgba(255, 0, 51, 0.2);
+  box-shadow: 0 10px 30px rgba(229, 57, 53, 0.2);
 }
 
 .login-dropdown-item {
@@ -225,8 +229,8 @@
 }
 
 .login-dropdown-item:hover {
-  background: rgba(255, 0, 51, 0.12);
-  color: var(--color-primary);
+  background: rgba(122, 31, 162, 0.22);
+  color: #FFE082;
 }
 
 /* Mobile Styles */
@@ -275,18 +279,13 @@
   }
 
   .logo-icons-row {
-    padding: 3px 5px;
-    gap: 5px;
+    padding: 6px 9px;
+    gap: 7px;
   }
 
   .brand-logo-img {
-    width: 17px;
-    height: 17px;
-  }
-
-  .logo-main {
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
+    width: 36px;
+    height: 36px;
   }
 
   .logo-year {
@@ -317,7 +316,6 @@
 }
 
 @media (max-width: 480px) {
-  .logo-main,
   .logo-year {
     display: none;
   }

@@ -3,7 +3,7 @@
   padding: 100px 5%;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(ellipse at center, rgba(255, 0, 51, 0.05), transparent 50%);
+  background: radial-gradient(ellipse at center, rgba(229, 57, 53, 0.05), transparent 50%);
 }
 
 .performers::after {
@@ -15,7 +15,7 @@
   width: 550px;
   height: 550px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.15), transparent 70%);
   filter: blur(120px);
   opacity: 0.5;
   pointer-events: none;
@@ -101,8 +101,8 @@
   font-size: 3rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 0 20px rgba(255, 0, 51, 0.8),
-               0 0 40px rgba(255, 0, 51, 0.6),
+  text-shadow: 0 0 20px rgba(229, 57, 53, 0.8),
+               0 0 40px rgba(229, 57, 53, 0.6),
                0 4px 20px rgba(0, 0, 0, 0.8);
   letter-spacing: 0.15em;
   opacity: 0;
@@ -145,7 +145,7 @@
   left: 0;
   right: 0;
   height: 60%;
-  background: linear-gradient(to top, rgba(255, 0, 51, 0.8), transparent);
+  background: linear-gradient(to top, rgba(229, 57, 53, 0.8), transparent);
   display: flex;
   align-items: flex-end;
   padding: 25px;

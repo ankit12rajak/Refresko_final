@@ -5,8 +5,8 @@
   justify-content: center;
   position: relative;
   padding: 40px 20px;
-  background: radial-gradient(circle at center, rgba(255, 0, 51, 0.12), transparent 50%),
-    radial-gradient(ellipse at top right, rgba(255, 0, 51, 0.08), transparent 60%);
+  background: radial-gradient(circle at center, rgba(229, 57, 53, 0.12), transparent 50%),
+    radial-gradient(ellipse at top right, rgba(229, 57, 53, 0.08), transparent 60%);
   overflow: hidden;
 }
 
@@ -18,7 +18,7 @@
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.25), transparent 70%);
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.25), transparent 70%);
   filter: blur(80px);
   opacity: 0.6;
   pointer-events: none;
@@ -33,7 +33,7 @@
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.2), transparent 70%);
   filter: blur(100px);
   opacity: 0.5;
   pointer-events: none;
@@ -57,7 +57,7 @@
   z-index: 100;
   padding: 10px 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(10, 10, 10, 0.5);
+  background: rgba(26, 26, 26, 0.5);
   backdrop-filter: blur(10px);
 }
 
@@ -70,13 +70,13 @@
 .auth-container {
   max-width: 500px;
   width: 100%;
-  background: rgba(10, 10, 10, 0.8);
+  background: rgba(26, 26, 26, 0.8);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 0, 51, 0.2);
+  border: 1px solid rgba(229, 57, 53, 0.2);
   padding: 50px 40px;
   position: relative;
   z-index: 10;
-  box-shadow: 0 20px 60px rgba(255, 0, 51, 0.15);
+  box-shadow: 0 20px 60px rgba(229, 57, 53, 0.15);
 }
 
 .auth-container::before {
@@ -101,7 +101,7 @@
 
 .lock-icon {
   font-size: 3rem;
-  filter: drop-shadow(0 0 20px rgba(255, 0, 51, 0.5));
+  filter: drop-shadow(0 0 20px rgba(229, 57, 53, 0.5));
 }
 
 .auth-title {
@@ -110,7 +110,7 @@
   color: var(--color-secondary);
   letter-spacing: 0.1em;
   margin-bottom: 15px;
-  text-shadow: 0 0 20px rgba(255, 0, 51, 0.3);
+  text-shadow: 0 0 20px rgba(229, 57, 53, 0.3);
 }
 
 .auth-subtitle {
@@ -129,10 +129,10 @@
 /* Error Banner */
 .error-banner {
   padding: 15px 20px;
-  background: rgba(255, 51, 51, 0.1);
-  border: 1px solid rgba(255, 51, 51, 0.3);
-  border-left: 3px solid #ff3333;
-  color: #ff6666;
+  background: rgba(229, 57, 53, 0.1);
+  border: 1px solid rgba(229, 57, 53, 0.3);
+  border-left: 3px solid #E53935;
+  color: #FFC107;
   font-family: var(--font-body);
   font-size: 0.95rem;
   text-align: center;
@@ -141,8 +141,8 @@
 /* Demo Credentials */
 .demo-credentials {
   padding: 15px 20px;
-  background: rgba(255, 0, 51, 0.05);
-  border: 1px solid rgba(255, 0, 51, 0.2);
+  background: rgba(229, 57, 53, 0.05);
+  border: 1px solid rgba(229, 57, 53, 0.2);
   border-left: 3px solid var(--color-primary);
 }
 
@@ -165,7 +165,7 @@
 .demo-info span {
   color: var(--color-primary);
   font-family: monospace;
-  background: rgba(255, 0, 51, 0.1);
+  background: rgba(229, 57, 53, 0.1);
   padding: 2px 6px;
   margin-left: 5px;
 }
@@ -198,8 +198,8 @@
 
 .form-input:focus {
   border-color: var(--color-primary);
-  background: rgba(255, 0, 51, 0.05);
-  box-shadow: 0 0 20px rgba(255, 0, 51, 0.2);
+  background: rgba(229, 57, 53, 0.05);
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.2);
 }
 
 .form-input::placeholder {
@@ -275,7 +275,7 @@
 }
 
 .auth-btn:hover {
-  box-shadow: 0 0 30px rgba(255, 0, 51, 0.5);
+  box-shadow: 0 0 30px rgba(229, 57, 53, 0.5);
   transform: translateY(-2px);
 }
 
@@ -314,7 +314,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 0, 51, 0.5),
+    rgba(229, 57, 53, 0.5),
     transparent
   );
 }

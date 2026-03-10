@@ -48,7 +48,6 @@ const Navbar = () => {
             <span className="logo-separator">|</span>
             <img src="/refresko.png" alt="Refresko Logo" className="brand-logo-img" />
           </div>
-          <span className="logo-main">REFRESKO</span>
           <span className="logo-year">2026</span>
         </div>
 

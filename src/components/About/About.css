@@ -3,7 +3,7 @@
   padding: 120px 5%;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(circle at right, rgba(255, 0, 51, 0.08), transparent 50%);
+  background: radial-gradient(circle at right, rgba(229, 57, 53, 0.08), transparent 50%);
 }
 
 .about::before {
@@ -14,7 +14,7 @@
   width: 450px;
   height: 450px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.2), transparent 70%);
   filter: blur(90px);
   opacity: 0.6;
   pointer-events: none;
@@ -28,7 +28,7 @@
   font-size: clamp(2.5rem, 5vw, 5rem);
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.996);
   color: rgba(255, 255, 255, 0.495);
-  text-shadow: 0 0 28px rgba(229, 230, 224, 0.429);
+  text-shadow: 0 0 28px rgba(189, 189, 189, 0.429);
   animation: typing 3.5s steps(5, end) ease-out;
   white-space: nowrap;
   overflow: hidden;
@@ -90,7 +90,7 @@
 }
 
 .about-theme {
-  background: rgba(255, 0, 51, 0.05);
+  background: rgba(229, 57, 53, 0.05);
   border-left: 3px solid var(--color-primary);
   padding: 25px 30px;
   margin-bottom: 50px;
@@ -129,13 +129,13 @@
   align-items: center;
   padding: 20px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 0, 51, 0.2);
+  border: 1px solid rgba(229, 57, 53, 0.2);
   border-radius: 10px;
   transition: all 0.3s ease;
 }
 
 .stat-item:hover {
-  background: rgba(255, 0, 51, 0.1);
+  background: rgba(229, 57, 53, 0.1);
   border-color: var(--color-primary);
 }
 
@@ -175,7 +175,7 @@
 
 .logo-ring {
   position: absolute;
-  border: 2px solid rgba(255, 0, 51, 0.3);
+  border: 2px solid rgba(229, 57, 53, 0.3);
   border-radius: 50%;
   animation: ring-rotate 10s linear infinite;
 }

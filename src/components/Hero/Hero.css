@@ -5,8 +5,8 @@
   justify-content: center;
   position: relative;
   padding: 120px 5% 100px;
-  background: radial-gradient(circle at center, rgba(255, 0, 51, 0.12), transparent 50%),
-    radial-gradient(ellipse at top right, rgba(255, 0, 51, 0.08), transparent 60%);
+  background: radial-gradient(circle at center, rgba(255, 193, 7, 0.16), transparent 50%),
+    radial-gradient(ellipse at top right, rgba(122, 31, 162, 0.2), transparent 60%);
   overflow: hidden;
 }
 
@@ -18,7 +18,7 @@
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.25), transparent 70%);
+  background: radial-gradient(circle, rgba(255, 193, 7, 0.28), transparent 70%);
   filter: blur(80px);
   opacity: 0.6;
   pointer-events: none;
@@ -32,7 +32,7 @@
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(122, 31, 162, 0.26), transparent 70%);
   filter: blur(100px);
   opacity: 0.5;
   pointer-events: none;
@@ -80,8 +80,8 @@
   line-height: 1.1;
   margin-bottom: 30px;
   text-transform: uppercase;
-  text-shadow: 0 0 30px rgba(255, 0, 51, 0.3),
-    0 0 60px rgba(255, 0, 51, 0.2);
+  text-shadow: 0 0 28px rgba(255, 193, 7, 0.35),
+    0 0 52px rgba(122, 31, 162, 0.32);
 }
 
 .hero-subtitle {
@@ -118,7 +118,7 @@
 }
 
 .btn-primary {
-  background: var(--color-primary);
+  background: var(--brand-gradient);
   border: none;
   color: var(--color-background);
   font-family: var(--font-body);
@@ -154,7 +154,8 @@
 }
 
 .btn-primary:hover {
-  box-shadow: 0 0 30px rgba(255, 0, 51, 0.5);
+  background: var(--brand-gradient-hover);
+  box-shadow: 0 12px 28px rgba(122, 31, 162, 0.35);
   transform: skewX(-10deg) scale(1.05);
 }
 
@@ -173,9 +174,9 @@
 }
 
 .btn-secondary:hover {
-  border-color: var(--color-primary);
-  background: rgba(255, 0, 51, 0.1);
-  color: var(--color-primary);
+  border-color: #FFC107;
+  background: var(--brand-gradient-soft);
+  color: #FFFFFF;
 }
 
 .hero-scroll-indicator {
@@ -188,7 +189,7 @@
 .scroll-line {
   width: 2px;
   height: 60px;
-  background: linear-gradient(to bottom, var(--color-primary), transparent);
+  background: linear-gradient(to bottom, #FFC107, #7A1FA2, transparent);
   transform-origin: top;
   animation: scroll-pulse 2s infinite;
 }

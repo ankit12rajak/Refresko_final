@@ -55,12 +55,12 @@
 }
 
 .staff-btn-danger {
-  background: rgba(255, 90, 90, 0.12);
-  border-color: rgba(255, 110, 110, 0.35);
+  background: rgba(229, 57, 53, 0.12);
+  border-color: rgba(229, 57, 53, 0.35);
 }
 
 .staff-btn-danger:hover {
-  background: rgba(255, 90, 90, 0.2);
+  background: rgba(229, 57, 53, 0.2);
 }
 
 .staff-grid {
@@ -71,7 +71,7 @@
 }
 
 .staff-card {
-  background: rgba(9, 18, 36, 0.7);
+  background: rgba(74, 20, 140, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 14px;
   padding: 16px;
@@ -185,18 +185,18 @@ tbody tr:hover {
 }
 
 .status-success {
-  background: rgba(80, 200, 120, 0.16);
-  border-color: rgba(80, 200, 120, 0.35);
+  background: rgba(255, 193, 7, 0.16);
+  border-color: rgba(255, 193, 7, 0.35);
 }
 
 .status-pending {
-  background: rgba(255, 196, 72, 0.16);
-  border-color: rgba(255, 196, 72, 0.35);
+  background: rgba(255, 193, 7, 0.16);
+  border-color: rgba(255, 193, 7, 0.35);
 }
 
 .status-danger {
-  background: rgba(255, 110, 110, 0.16);
-  border-color: rgba(255, 110, 110, 0.35);
+  background: rgba(229, 57, 53, 0.16);
+  border-color: rgba(229, 57, 53, 0.35);
 }
 
 .gate-form {
@@ -226,13 +226,13 @@ tbody tr:hover {
   margin: 10px 0;
   padding: 10px;
   border-radius: 10px;
-  background: rgba(255, 100, 100, 0.15);
-  border: 1px solid rgba(255, 100, 100, 0.3);
+  background: rgba(229, 57, 53, 0.15);
+  border: 1px solid rgba(229, 57, 53, 0.3);
 }
 
 .staff-info {
-  background: rgba(100, 200, 100, 0.15);
-  border-color: rgba(100, 200, 100, 0.3);
+  background: rgba(255, 193, 7, 0.15);
+  border-color: rgba(255, 193, 7, 0.3);
 }
 
 .staff-home-link {

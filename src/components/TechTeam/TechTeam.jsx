@@ -8,7 +8,7 @@ const teamMembers = [
     name: 'ANKIT RAJAK',
     department: 'CSE 3rd Year',
     initial: 'AR',
-    color: '#FF0033',
+    color: '#E53935',
     image: '/AnkitRajak.jpeg'
   },
   {
@@ -16,7 +16,7 @@ const teamMembers = [
     name: 'KOUSHIK DAS',
     department: 'CSE 3rd Year',
     initial: 'KD',
-    color: '#FF1A4D',
+    color: '#7A1FA2',
     image: '/KoushikDas.jpeg'
   },
   {
@@ -24,7 +24,7 @@ const teamMembers = [
     name: 'PRITAM GHOSH',
     department: 'CSE 3rd Year',
     initial: 'PG',
-    color: '#FF3366',
+    color: '#FFC107',
     image: '/PritamGhosh.jpeg'
   },
   {
@@ -32,7 +32,7 @@ const teamMembers = [
     name: 'PRANJAL DAS',
     department: 'CYS 3rd Year',
     initial: 'PD',
-    color: '#CC0029',
+    color: '#E53935',
     image: '/pranjal.webp'
   },
   {
@@ -40,7 +40,7 @@ const teamMembers = [
     name: 'RAJESH MONDAL',
     department: 'BCA 2nd Year',
     initial: 'RM',
-    color: '#E6002E',
+    color: '#FFC107',
     image: '/RajeshMondol.jpeg'
   },
   {
@@ -48,7 +48,7 @@ const teamMembers = [
     name: 'ANKIT PAL',
     department: 'BCA 2nd Year',
     initial: 'AP',
-    color: '#FF4D79',
+    color: '#7A1FA2',
     image: '/AnkitPal.jpeg'
   },
   {
@@ -56,7 +56,7 @@ const teamMembers = [
     name: 'DEBANJAN DEY KABIRAJ',
     department: 'CYBER SECURITY 3rd Year',
     initial: 'DB',
-    color: '#FF6B9D',
+    color: '#7A1FA2',
     image: '/deba.jpeg'
   }
 ]
@@ -120,7 +120,7 @@ const TechTeam = () => {
           <svg viewBox="0 0 1200 200" preserveAspectRatio="none">
             <path
               d="M0,100 Q300,20 600,100 T1200,100"
-              stroke="rgba(255,255,255,0.3)"
+              stroke="rgba(189, 189, 189,0.45)"
               strokeWidth="2"
               strokeDasharray="8,8"
               fill="none"

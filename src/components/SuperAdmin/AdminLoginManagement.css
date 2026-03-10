@@ -43,7 +43,7 @@
 .admin-create-form .form-group input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(255, 0, 51, 0.2);
+  box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.2);
 }
 
 .form-message {
@@ -57,7 +57,7 @@
 }
 
 .form-message.success {
-  color: #00ff66;
+  color: #FFC107;
 }
 
 .create-admin-btn {
@@ -91,7 +91,7 @@
 }
 
 .admin-table thead {
-  background: rgba(255, 0, 51, 0.1);
+  background: rgba(229, 57, 53, 0.1);
 }
 
 .admin-table th {
@@ -102,7 +102,7 @@
   text-transform: uppercase;
   padding: 14px 12px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 0, 51, 0.3);
+  border-bottom: 1px solid rgba(229, 57, 53, 0.3);
 }
 
 .admin-table td {
@@ -139,13 +139,13 @@
 }
 
 .action-btn.toggle:hover {
-  border-color: #00e5ff;
-  color: #00e5ff;
+  border-color: #7A1FA2;
+  color: #7A1FA2;
 }
 
 .action-btn.reset:hover {
-  border-color: #ffa500;
-  color: #ffa500;
+  border-color: #FFC107;
+  color: #FFC107;
 }
 
 .action-btn.delete:hover {

@@ -7,8 +7,8 @@
   justify-content: center;
   position: relative;
   padding: 60px 20px;
-  background: radial-gradient(circle at center, rgba(255, 0, 51, 0.12), transparent 50%),
-    radial-gradient(ellipse at top left, rgba(255, 0, 51, 0.08), transparent 60%);
+  background: radial-gradient(circle at center, rgba(229, 57, 53, 0.12), transparent 50%),
+    radial-gradient(ellipse at top left, rgba(229, 57, 53, 0.08), transparent 60%);
   overflow: hidden;
 }
 
@@ -20,7 +20,7 @@
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.25), transparent 70%);
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.25), transparent 70%);
   filter: blur(80px);
   opacity: 0.6;
   pointer-events: none;
@@ -35,7 +35,7 @@
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 0, 51, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.2), transparent 70%);
   filter: blur(100px);
   opacity: 0.5;
   pointer-events: none;
@@ -50,13 +50,13 @@
 .profile-setup-container {
   max-width: 800px;
   width: 100%;
-  background: rgba(10, 10, 10, 0.85);
+  background: rgba(26, 26, 26, 0.85);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 0, 51, 0.2);
+  border: 1px solid rgba(229, 57, 53, 0.2);
   padding: 50px 40px;
   position: relative;
   z-index: 10;
-  box-shadow: 0 20px 60px rgba(255, 0, 51, 0.15);
+  box-shadow: 0 20px 60px rgba(229, 57, 53, 0.15);
 }
 
 .profile-setup-container::before {
@@ -82,7 +82,7 @@
 
 .setup-icon {
   font-size: 3rem;
-  filter: drop-shadow(0 0 20px rgba(255, 0, 51, 0.5));
+  filter: drop-shadow(0 0 20px rgba(229, 57, 53, 0.5));
 }
 
 .profile-title {
@@ -91,7 +91,7 @@
   color: var(--color-secondary);
   letter-spacing: 0.1em;
   margin-bottom: 15px;
-  text-shadow: 0 0 20px rgba(255, 0, 51, 0.3);
+  text-shadow: 0 0 20px rgba(229, 57, 53, 0.3);
 }
 
 .profile-subtitle {
@@ -134,10 +134,10 @@
 }
 
 .progress-step.active .step-number {
-  background: rgba(255, 0, 51, 0.2);
+  background: rgba(229, 57, 53, 0.2);
   border-color: var(--color-primary);
   color: var(--color-primary);
-  box-shadow: 0 0 20px rgba(255, 0, 51, 0.3);
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.3);
 }
 
 .step-label {
@@ -205,8 +205,8 @@
 
 .form-input:focus {
   border-color: var(--color-primary);
-  background: rgba(255, 0, 51, 0.05);
-  box-shadow: 0 0 20px rgba(255, 0, 51, 0.2);
+  background: rgba(229, 57, 53, 0.05);
+  box-shadow: 0 0 20px rgba(229, 57, 53, 0.2);
 }
 
 .form-input::placeholder {
@@ -214,14 +214,14 @@
 }
 
 .form-input.error {
-  border-color: #ff3333;
-  background: rgba(255, 51, 51, 0.05);
+  border-color: #E53935;
+  background: rgba(229, 57, 53, 0.05);
 }
 
 .error-message {
   font-family: var(--font-body);
   font-size: 0.8rem;
-  color: #ff3333;
+  color: #E53935;
   margin-top: -5px;
 }
 
@@ -280,9 +280,9 @@ select.form-input option {
 }
 
 .submit-btn:hover {
-  background: #cc0029;
+  background: #FFC107;
   transform: translateY(-2px);
-  box-shadow: 0 5px 30px rgba(255, 0, 51, 0.4);
+  box-shadow: 0 5px 30px rgba(229, 57, 53, 0.4);
 }
 
 .submit-btn span {
